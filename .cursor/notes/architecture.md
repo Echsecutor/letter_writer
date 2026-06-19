@@ -53,3 +53,5 @@ Messages typed in `workerProtocol.ts`.
 ## Plan reference
 
 Implementation phases, review gates, test fixtures: [letter_writer_web_app.md](../plans/letter_writer_web_app.md).
+
+**Phase 0 (complete):** Vite/React/Tailwind/Vitest scaffold, full module skeleton, `workerProtocol.ts`, vendor scripts, CI, placeholder tests.

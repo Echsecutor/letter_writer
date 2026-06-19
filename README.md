@@ -4,30 +4,34 @@ Letter Writer is a client-only web app for composing formal German business lett
 
 ## Repository overview
 
-Single-project repository (no monorepo). The Vite/React app is planned at the repo root once Phase 0 scaffolding lands.
+Single-project Vite/React app at the repo root.
 
 | Path | Purpose |
 |------|---------|
-| `.cursor/plans/letter_writer_web_app.md` | Architecture, implementation phases, review gates, test strategy |
-| `.cursor/notes/` | Agent/developer notes ([index](.cursor/notes/index.md): pipeline, WASM deps, templating) |
-| `templates/` | Letter templates — legacy `letter.md` (pandoc/LaTeX); future `.typ` + `.schema.json` |
+| `src/app/` | App shell and layout |
+| `src/ui/` | Presentational React components |
+| `src/hooks/` | Pipeline wiring and draft persistence |
+| `src/domain/` | Pure TS: context, escape, schema, Nunjucks adapter |
+| `src/pipeline/` | Orchestrator + typed stages + body converters |
+| `src/infra/` | Web Workers, WASM, Node compiler for CI |
+| `templates/` | Letter `.typ` shells + `.schema.json` form definitions |
+| `test/fixtures/` | Golden inputs and expected artifacts |
+| `public/typst-packages/` | Vendored letter-pro (`@local/letter-pro:3.0.0`) |
+| `scripts/` | `vendor-letter-pro.sh`, `verify-vendored-letter-pro.sh` |
+| `.cursor/plans/` | [Implementation plan](.cursor/plans/letter_writer_web_app.md) |
+| `.cursor/notes/` | Developer notes ([index](.cursor/notes/index.md)) |
+| `.github/workflows/ci.yml` | Lint, build, vendored check, scaffold tests |
 | `LICENSE.txt` | AGPL-3.0 |
 
-**Planned layout** (not yet present): `src/` (app, UI, pipeline, workers), `public/typst-packages/` (vendored letter-pro), `test/fixtures/`, `scripts/vendor-letter-pro.sh`.
-
-**Deployment / CI:** Not configured yet. Target is static hosting (e.g. GitHub Pages or Cloudflare Pages) after Phase 3.
+Legacy pandoc/LaTeX draft: `templates/letter.md` (parity reference only).
 
 ## Usage
 
 ### Deployed environments
 
-No public deployment yet.
+No public deployment yet (Phase 3).
 
 ### Local development
-
-The web app is not scaffolded yet. Implementation starts with Phase 0 in the [implementation plan](.cursor/plans/letter_writer_web_app.md).
-
-Once Phase 0 is complete, local development will look like:
 
 ```bash
 npm install
@@ -35,15 +39,17 @@ npm install
 npm run dev
 ```
 
-Other planned scripts:
+Other scripts:
 
 ```bash
-npm run test      # unit + integration (Node typst compiler)
+npm run test            # all tests (Phase 0: pipeline placeholders fail until Phase 1)
+npm run test:scaffold   # passing scaffold tests (CI)
 npm run lint
-npm run build     # static output for CDN deploy
+npm run build           # static output for CDN deploy
+npm run verify:vendored # check letter-pro is present
 ```
 
-**First-load size:** expect ~15 MB without pandoc; ~30 MB if the Markdown body converter (pandoc-wasm, GPL-2.0) is loaded. See the plan for lazy-loading details.
+**First-load size (planned):** ~15 MB without pandoc; ~30 MB with pandoc-wasm (GPL-2.0, lazy-loaded). See the [implementation plan](.cursor/plans/letter_writer_web_app.md).
 
 ## License
 
