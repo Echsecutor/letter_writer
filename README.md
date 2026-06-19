@@ -1,6 +1,8 @@
+[![CI](https://github.com/Echsecutor/letter_writer/actions/workflows/ci.yml/badge.svg)](https://github.com/Echsecutor/letter_writer/actions/workflows/ci.yml)
+
 # Letter Writer
 
-Letter Writer is a client-only web app for composing formal German business letters (DIN 5008). Users pick a template, fill a generated form, preview the letter in the browser, and download a PDF — with no backend. Rendering uses Typst in WebAssembly ([typst.ts](https://github.com/Myriad-Dreamin/typst.ts) + [letter-pro](https://typst.app/universe/package/letter-pro/)); optional Markdown body text is converted via [pandoc-wasm](https://github.com/pandoc/pandoc-wasm).
+Letter Writer is a client-only web app for composing formal German business letters (DIN 5008). Users pick a template from a curated catalog, fill a shared form, preview the letter in the browser, and download a PDF — with no backend. Rendering uses Typst in WebAssembly ([typst.ts](https://github.com/Myriad-Dreamin/typst.ts) + vendored Universe packages); optional Markdown body text is converted via [pandoc-wasm](https://github.com/pandoc/pandoc-wasm) (GPL-2.0, lazy-loaded).
 
 ## Repository overview
 
@@ -14,10 +16,10 @@ Single-project Vite/React app at the repo root.
 | `src/domain/` | Pure TS: context, escape, schema, Nunjucks adapter |
 | `src/pipeline/` | Orchestrator + typed stages + body converters |
 | `src/infra/` | Web Workers, WASM, Node compiler for CI |
-| `templates/` | Letter `.typ` shells + `.schema.json` form definitions |
+| `templates/` | Catalog (`catalog.json`), shared schema, adapter `.typ` shells |
 | `test/fixtures/` | Golden inputs and expected artifacts |
-| `public/typst-packages/` | Vendored letter-pro (`@local/letter-pro:3.0.0`) |
-| `scripts/` | `vendor-letter-pro.sh`, `verify-vendored-letter-pro.sh` |
+| `public/typst-packages/` | Vendored `@local` packages (letter-pro, briefs, pc-letter) |
+| `scripts/` | `vendor-all-packages.sh`, `verify-vendored-packages.sh` |
 | `.cursor/plans/` | [Implementation plan](.cursor/plans/letter_writer_web_app.md) |
 | `.cursor/notes/` | Developer notes ([index](.cursor/notes/index.md)) |
 | `.github/workflows/ci.yml` | Lint, build, tests; push Docker image to GHCR on `main` and release tags |
@@ -27,33 +29,41 @@ Single-project Vite/React app at the repo root.
 
 Legacy pandoc/LaTeX draft: `templates/letter.md` (parity reference only).
 
+## Template catalog
+
+| Template ID | Package | Style |
+|-------------|---------|-------|
+| `letter-pro` | letter-pro 3.0.0 | Formal DIN 5008 business letter |
+| `briefs` | briefs 0.3.0 | Minimal DIN-inspired, window envelope alignment |
+| `pc-letter` | pc-letter 0.4.0 | Classic/personal correspondence |
+
+All templates share `templates/shared.schema.json`. Switching templates keeps form values and body mode.
+
 ## Usage
 
 ### Deployed environments
 
-No public deployment yet (Phase 3).
+Static output from `npm run build` (or the GHCR image) can be deployed to any CDN (Cloudflare Pages, GitHub Pages, nginx). No server-side rendering required.
 
 ### Local development
 
 ```bash
 npm install
-./scripts/vendor-letter-pro.sh   # vendored letter-pro for Typst WASM
+npm run vendor:packages   # vendored Typst packages for WASM + NodeCompiler
 npm run dev
 ```
 
 Other scripts:
 
 ```bash
-npm run test            # all tests (Phase 0: pipeline placeholders fail until Phase 1)
-npm run test:scaffold   # passing scaffold tests (CI)
+npm run test
+npm run test:scaffold
 npm run lint
-npm run build           # static output for CDN deploy
-npm run verify:vendored # check letter-pro is present
+npm run build
+npm run verify:vendored
 ```
 
 ### Docker
-
-Build and serve the production static bundle (same steps as CI: vendor letter-pro, typecheck, Vite build):
 
 ```bash
 docker compose up --build
@@ -63,19 +73,19 @@ Open http://localhost:8080 (override host port with `LETTER_WRITER_PORT=3000 doc
 
 ### CI and container images
 
-On every push to `main`, GitHub Actions runs lint, build, and tests, then builds and pushes `ghcr.io/<owner>/letter_writer:latest` to the [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry). No registry secrets are required for this public repository — the workflow uses the built-in `GITHUB_TOKEN` with `packages: write`.
+On every push to `main`, GitHub Actions runs lint, build, and tests, then builds and pushes `ghcr.io/<owner>/letter_writer:latest` to the [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 
-Release tags matching `vMAJOR.MINOR.PATCH` (for example `v1.0.0`) publish the same image with semver tags (`1.0.0`, `1.0`, `1`) in addition to `latest`.
+Release tags matching `vMAJOR.MINOR.PATCH` publish semver tags (`1.0.0`, `1.0`, `1`) in addition to `latest`.
 
 ```bash
 docker pull ghcr.io/echsecutor/letter_writer:latest
 docker run --rm -p 8080:80 ghcr.io/echsecutor/letter_writer:latest
 ```
 
-**First-load size (planned):** ~15 MB without pandoc; ~30 MB with pandoc-wasm (GPL-2.0, lazy-loaded). See the [implementation plan](.cursor/plans/letter_writer_web_app.md).
+**First-load size:** ~15 MB without pandoc; ~30 MB with pandoc-wasm (lazy-loaded on first Markdown body). See the [implementation plan](.cursor/plans/letter_writer_web_app.md).
 
 ## License
 
 Application code: [AGPL-3.0](LICENSE.txt).
 
-Third-party runtime dependencies include Apache-2.0 (typst.ts), MIT (letter-pro), BSD-2-Clause (nunjucks), and GPL-2.0-or-later (pandoc-wasm, loaded only when converting Markdown body text).
+Third-party runtime dependencies include Apache-2.0 (typst.ts), MIT (letter-pro, briefs, pc-letter), BSD-2-Clause (nunjucks), and GPL-2.0-or-later (pandoc-wasm, loaded only when converting Markdown body text).

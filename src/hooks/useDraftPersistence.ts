@@ -1,51 +1,43 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { BodyMode, FormValues } from '../domain/letter/types';
+import type { BodyMode } from '../domain/letter/types';
+import {
+  draftStorageKey,
+  readDraftFromStorage,
+  serializeDraft,
+  switchTemplatePreservingValues,
+  type DraftState,
+} from '../domain/letter/draftStorage';
 
-const STORAGE_KEY = 'letter-writer-draft';
-
-export interface DraftState {
-  templateId: string;
-  values: FormValues;
-  bodyMode: BodyMode;
-}
-
-function readDraft(templateId: string): Pick<DraftState, 'values' | 'bodyMode'> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return { values: {}, bodyMode: 'plain' };
-    }
-    const parsed = JSON.parse(raw) as Partial<DraftState>;
-    if (parsed.templateId !== templateId) {
-      return { values: {}, bodyMode: 'plain' };
-    }
-    return {
-      values: parsed.values ?? {},
-      bodyMode: parsed.bodyMode === 'markdown' ? 'markdown' : 'plain',
-    };
-  } catch {
-    return { values: {}, bodyMode: 'plain' };
-  }
-}
-
-export function useDraftPersistence(templateId: string) {
-  const [values, setValues] = useState<FormValues>(() => readDraft(templateId).values);
-  const [bodyMode, setBodyMode] = useState<BodyMode>(() => readDraft(templateId).bodyMode);
+export function useDraftPersistence() {
+  const [draft, setDraft] = useState<DraftState>(() =>
+    readDraftFromStorage(localStorage.getItem(draftStorageKey())),
+  );
 
   useEffect(() => {
-    const draft: DraftState = { templateId, values, bodyMode };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
-  }, [templateId, values, bodyMode]);
+    localStorage.setItem(draftStorageKey(), serializeDraft(draft));
+  }, [draft]);
+
+  const setTemplateId = useCallback((templateId: string) => {
+    setDraft((current) => switchTemplatePreservingValues(current, templateId));
+  }, []);
 
   const setField = useCallback((fieldId: string, value: string) => {
-    setValues((current) => ({ ...current, [fieldId]: value }));
+    setDraft((current) => ({
+      ...current,
+      values: { ...current.values, [fieldId]: value },
+    }));
   }, []);
 
-  const resetForTemplate = useCallback((nextTemplateId: string) => {
-    const draft = readDraft(nextTemplateId);
-    setValues(draft.values);
-    setBodyMode(draft.bodyMode);
+  const setBodyMode = useCallback((bodyMode: BodyMode) => {
+    setDraft((current) => ({ ...current, bodyMode }));
   }, []);
 
-  return { values, bodyMode, setField, setBodyMode, resetForTemplate };
+  return {
+    templateId: draft.templateId,
+    values: draft.values,
+    bodyMode: draft.bodyMode,
+    setTemplateId,
+    setField,
+    setBodyMode,
+  };
 }

@@ -16,8 +16,21 @@ let worker: Worker | null = null;
 let initPromise: Promise<void> | null = null;
 const pending = new Map<string, PendingRequest>();
 
+function rejectAllPending(message: string): void {
+  for (const [id, request] of pending.entries()) {
+    pending.delete(id);
+    request.reject(new Error(message));
+  }
+}
+
 function getWorker(): Worker {
   worker ??= new Worker(new URL('./typst.worker.ts', import.meta.url), { type: 'module' });
+  worker.onerror = (event: ErrorEvent) => {
+    rejectAllPending(event.message || 'Typst worker failed to start');
+  };
+  worker.onmessageerror = () => {
+    rejectAllPending('Typst worker returned an invalid message');
+  };
   worker.onmessage = (event: MessageEvent<TypstResponse>) => {
     const response = event.data;
     const request = pending.get(response.id);

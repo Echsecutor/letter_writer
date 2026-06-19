@@ -56,7 +56,7 @@ export function useLetterPipeline(input: LetterInput | null): UseLetterPipelineR
           }
           setOutput(null);
           setError(pipelineError instanceof Error ? pipelineError.message : 'Pipeline failed');
-          setResolvedKey('');
+          setResolvedKey(inputKey);
         })
         .finally(() => {
           if (requestIdRef.current === requestId) {

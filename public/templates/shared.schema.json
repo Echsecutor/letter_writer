@@ -1,0 +1,47 @@
+{
+  "id": "shared",
+  "title": "Brief (gemeinsame Felder)",
+  "fields": [
+    {
+      "id": "Absender_Name",
+      "label": "Absender Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "Absender_Adresse",
+      "label": "Absender Adresse",
+      "type": "text",
+      "default": "Berrenrather Str. 150, 50354 Hürth"
+    },
+    {
+      "id": "Empfaenger",
+      "label": "Empfänger",
+      "type": "textarea",
+      "required": true
+    },
+    {
+      "id": "Betreff",
+      "label": "Betreff",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "Datum",
+      "label": "Datum",
+      "type": "date"
+    },
+    {
+      "id": "Ort",
+      "label": "Ort",
+      "type": "text",
+      "placeholder": "z. B. Hürth"
+    },
+    {
+      "id": "Anschreiben",
+      "label": "Anschreiben",
+      "type": "textarea",
+      "required": true
+    }
+  ]
+}

@@ -149,23 +149,117 @@ Keep `templates/letter.md` during Phase 1 only as a **reference fixture** for pa
 - `/* BODY_INJECT */` is replaced by `assembleDocument` with the converted body Typst — **not** processed by Nunjucks (avoids `#`/`[` conflicts in user markdown).
 - Output must be valid Typst; user strings go through `typstEscape.ts`.
 
-### `templates/letter.schema.json`
+### Shared form schema (multi-template contract)
 
-Drives the auto-generated form (unchanged field list from prior plan). Schema types live in `domain/templates/schemaTypes.ts`.
+**One canonical schema drives the form for every template.** Users pick a letter *style* in the UI; filled fields (`Absender`, `Empfänger`, `Betreff`, `Datum`, `Anschreiben`, reference lines) stay intact when switching templates.
+
+| File | Role |
+|------|------|
+| `templates/shared.schema.json` | Canonical field IDs, labels, types, defaults — **single source of truth** |
+| `templates/{id}.schema.json` | Thin wrapper: `"extends": "shared"` or identical copy (CI validates parity) |
+| `templates/{id}.typ` | Nunjucks adapter shell: maps shared context → library-specific API |
+| `templates/{id}.meta.json` | Catalog entry: `title`, `description`, `preview`, `package` pin |
+| `templates/catalog.json` | Ordered list of template IDs for `TemplatePicker` |
+
+Field IDs are stable across templates (`Absender_Name`, `Absender_Adresse`, `Empfaenger`, `Betreff`, `Datum`, `Anschreiben`, optional `reference_signs`, optional `Ort`). Each shell ignores fields the underlying library does not support.
+
+Renaming the current default template id from `letter` → `letter-pro` is recommended in Phase 3 for clarity (with migration in `useDraftPersistence`).
+
+Research and API mapping details: [typst-letter-templates.md](../notes/typst-letter-templates.md).
 
 ---
 
-## letter-pro in WASM (critical detail)
+## Template catalog (Phase 3 — researched libraries)
 
-Typst WASM **cannot fetch** `@preview/letter-pro` from the network. Vendor the package locally:
+Do **not** add arbitrary minimal `.typ` files. Phase 3 ships a **curated catalog** of real Typst Universe letter packages, vendored for WASM.
 
-```bash
-scripts/vendor-letter-pro.sh   # wraps git clone --depth 1 --branch v3.0.0
+### Recommended MVP catalog
+
+| Template ID | Typst package | Version | Style | License |
+|-------------|---------------|---------|-------|---------|
+| `letter-pro` | [letter-pro](https://typst.app/universe/package/letter-pro/) | 3.0.0 | Formal DIN 5008 business letter | MIT |
+| `briefs` | [briefs](https://typst.app/universe/package/briefs/) | 0.3.0 | Clean DIN-inspired; DIN lang window envelope | MIT |
+| `pc-letter` | [pc-letter](https://typst.app/universe/package/pc-letter/) | 0.4.0 | Classic/personal correspondence; DIN-compatible; multilingual | MIT |
+
+**Current default:** `letter-pro.typ` uses letter-pro; catalog includes briefs and pc-letter adapters.
+
+### Evaluated but not in MVP catalog
+
+| Package | Verdict |
+|---------|---------|
+| [pro-letter](https://typst.app/universe/package/pro-letter/) | US-letter default; English-centric — poor fit for German DIN primary use |
+| [letterloom](https://typst.app/universe/package/letterloom/) | English business conventions |
+| [appreciated-letter](https://typst.app/universe/package/appreciated-letter/) | Too basic; US-centric |
+| GitHub-only DIN templates (e.g. ludwig-austermann, pascal-huber) | Not on Universe; harder to pin/vendor; defer |
+
+### Adapter examples (same variables, different libraries)
+
+**letter-pro** (existing pattern):
+
+```typ
+#import "@local/letter-pro:3.0.0": letter-simple
+#show: letter-simple.with(
+  sender: (name: "{{ Absender_Name }}", address: "{{ Absender_Adresse | default('…') }}"),
+  recipient: [ {{ Empfaenger_typst }} ],
+  reference-signs: ( {% for ref in reference_signs %} ([{{ ref.label }}], [{{ ref.value }}]), {% endfor %} ),
+  date: "{{ Datum | default(today_de) }}",
+  subject: "{{ Betreff }}",
+)
+/* BODY_INJECT */
 ```
 
-Target: `public/typst-packages/local/letter-pro/3.0.0/`. Import as `@local/letter-pro:3.0.0`.
+**briefs** — `sender` is a line array; optional `location` from `Ort`:
 
-Register files in the typst worker via `addSource` / `mapShadow` so `@local/…` resolves without network fetch. Preload letter-pro sources once at worker init; do not re-fetch per compile.
+```typ
+#import "@local/briefs:0.3.0": letter
+#show: letter.with(
+  sender: ( [{{ Absender_Name }}], [{{ Absender_Adresse_typst }}] ),
+  recipient: [ {{ Empfaenger_typst }} ],
+  location: "{{ Ort }}",
+  date: "{{ Datum | default(today_de) }}",
+  subject: [{{ Betreff }}],
+)
+/* BODY_INJECT */
+```
+
+**pc-letter** — init + field macros; locale `de`:
+
+```typ
+#import "@local/pc-letter:0.4.0"
+#let letter = pc-letter.init(
+  author: ( name: "{{ Absender_Name }}", address: ({{ Absender_Adresse_typst_array }}) ),
+  style: ( locale: ( lang: "de", region: "DE" ), medium: "print" ),
+  date: "{{ Datum | default(today_de) }}",
+  subject: "{{ Betreff }}",
+)
+#show: letter.letter-style
+#(letter.address-field)[ {{ Empfaenger_typst }} ]
+/* BODY_INJECT */
+```
+
+(`Absender_Adresse_typst` / `_array` are computed in `buildContext.ts` — library-neutral helpers, not duplicate form fields.)
+
+### Template switch UX
+
+- `TemplatePicker` reads `catalog.json`; shows title, description, optional preview thumbnail.
+- Switching template **does not reset** form values or body mode (same schema).
+- Debounced recompile uses the newly selected shell + its vendored package.
+- Golden tests: same `sample-form-values.json` → valid PDF per catalog template.
+
+---
+
+## Vendored Typst packages in WASM (critical detail)
+
+Typst WASM **cannot fetch** `@preview/*` from the network. Vendor every catalog package locally:
+
+```bash
+scripts/vendor-typst-package.sh   # generic: repo, tag, namespace/name, version
+scripts/vendor-letter-pro.sh      # existing wrapper for letter-pro v3.0.0
+```
+
+Targets: `public/typst-packages/local/{name}/{version}/` (e.g. `letter-pro/3.0.0`, `briefs/0.3.0`, `pc-letter/0.4.0`). Import as `@local/{name}:{version}`.
+
+Register files in the typst worker via `addSource` / `mapShadow` so `@local/…` resolves without network fetch. Preload catalog package sources at worker init (or lazily on first use of a template if init time becomes an issue).
 
 ---
 
@@ -264,8 +358,14 @@ letter_writer/
 │       └── typst/
 │           └── nodeCompiler.ts     # @myriaddreamin/typst-ts-node-compiler for CI tests
 ├── templates/
-│   ├── letter.typ
-│   └── letter.schema.json
+│   ├── catalog.json                # Template picker catalog (Phase 3)
+│   ├── shared.schema.json          # Canonical form fields (all templates)
+│   ├── letter-pro.typ              # letter-pro adapter (rename from letter.typ)
+│   ├── letter-pro.meta.json
+│   ├── briefs.typ                  # briefs adapter (Phase 3)
+│   ├── briefs.meta.json
+│   ├── pc-letter.typ               # pc-letter adapter (Phase 3)
+│   └── pc-letter.meta.json
 ├── test/
 │   ├── fixtures/                   # golden inputs + expected artifacts
 │   │   ├── sample-form-values.json
@@ -276,9 +376,10 @@ letter_writer/
 │   └── integration/
 │       └── letterPipeline.test.ts  # full pipeline in Node
 ├── scripts/
+│   ├── vendor-typst-package.sh     # Generic Universe package vendor (Phase 3)
 │   └── vendor-letter-pro.sh
 ├── public/
-│   ├── typst-packages/local/letter-pro/3.0.0/
+│   ├── typst-packages/local/       # letter-pro, briefs, pc-letter, …
 │   └── fonts/
 ├── index.html
 ├── vite.config.ts
@@ -350,16 +451,35 @@ Each phase ends with a **mandatory review gate** (see next section). Do not star
 
 **Notes:** Pandoc runs in Node via `pandoc-wasm` for CI; browser uses dedicated worker (lazy, ~16 MB gzip WASM). `letterPipeline` Phase 1 gap fixed: body now flows through `convertBody`. Recipient text verified in assembled Typst (PDF simple scan unreliable for all fields).
 
-### Phase 3 — Polish & multi-template validation
+### Phase 3 — Template catalog, polish & deploy ✅ Complete (2026-06-19)
 
-1. `ReferenceFields.tsx` — yourmail / yourref pairs → `reference_signs`.
-2. WASM init progress bar + retry on font/WASM load failure.
-3. Second minimal template (e.g. `templates/letter-short.typ`) to prove template loading is generic.
-4. Static deploy config (Cloudflare Pages / GitHub Pages).
-5. Optional Playwright E2E: fill form → preview has SVG → download returns PDF.
-6. README: dev, deploy, WASM size, GPL note.
+**Template catalog (researched libraries — not placeholder shells):**
 
-**Phase 3 review gate**
+1. ✅ Add `templates/shared.schema.json`, `catalog.json`, and `{id}.meta.json` per template.
+2. ✅ Generalize vendoring: `vendor-typst-package.sh`; vendor **briefs@0.3.0** and **pc-letter@0.4.0** alongside letter-pro; CI verifies all.
+3. ✅ Implement adapter shells: `briefs.typ`, `pc-letter.typ`; rename `letter.typ` → `letter-pro.typ` (migrate draft `templateId`).
+4. ✅ Extend `buildContext.ts` with neutral helpers (`Absender_Adresse_typst_array`, sender lines, datetime) — **same form fields**.
+5. ✅ `TemplatePicker`: load catalog; show title/description; **switching template preserves form values**.
+6. ✅ Typst worker: register all catalog `@local` packages; integration test per template with `sample-form-values.json`.
+
+**Polish & deploy:**
+
+7. ✅ `ReferenceFields.tsx` — yourmail / yourref pairs → `reference_signs` (letter-pro + mapped in briefs/pc-letter shells).
+8. ✅ Optional `Ort` field for briefs `location` / pc-letter place name.
+9. ⏸ WASM init progress bar + retry on font/WASM load failure — deferred (loading text in preview suffices for MVP).
+10. ✅ Static deploy config documented in README (CDN / GHCR nginx image).
+11. ⏸ Optional Playwright E2E — deferred.
+12. ✅ README: template catalog, dev, deploy, WASM size, GPL note.
+
+**Phase 3 tests (required before gate):**
+
+- ✅ Unit: `buildContext` helpers for multi-library address shapes.
+- ✅ Snapshot: adapter shells filled from fixtures (unit test per template id).
+- ✅ Integration: `sample-form-values.json` → PDF per catalog template (`letter-pro`, `briefs`, `pc-letter`); `%PDF` checks.
+- ✅ Regression: template switch in draft storage test does not clear form state.
+- ⏸ Visual: reference PNG/SVG thumbnails in `templates/previews/` — deferred.
+
+**Phase 3 review gate** — passed (2026-06-19). Phase 3 checklist items checked below.
 
 ---
 
@@ -380,21 +500,22 @@ Run this checklist before merging / starting the next phase. Fix all failures be
 
 - [x] `letterPipeline.ts` is the single orchestrator; stages are independently unit-tested. *(Phase 0–1)*
 - [x] Body converter swappable via interface (pandoc vs plain text verified). *(Phase 2)*
-- [x] Template addition requires only new files under `templates/`, not changes to orchestrator. *(Phase 0–1)*
+- [x] Template addition requires only new files under `templates/` (+ vendor script entry), not changes to orchestrator. *(Phase 0–3)*
 - [x] Worker messages use `workerProtocol.ts` types only. *(Phase 0–1)*
 
 ### Tests
 
-- [x] All unit tests for completed stages pass. *(Phase 1–2)*
-- [x] Integration test covers **every implemented stage** in sequence for the phase. *(Phase 1–2)*
+- [x] All unit tests for completed stages pass. *(Phase 1–3)*
+- [x] Integration test covers **every implemented stage** in sequence for the phase. *(Phase 1–3)*
 - [x] PDF output tests assert: non-empty, valid `%PDF` header, and content checks for fixture data. *(Phase 1)*
 - [x] No tests skipped without tracked issue link. *(Phase 0 — placeholders fail explicitly, not skipped)*
 
 ### Dependencies & assets
 
 - [x] Pinned versions in `package.json` for typst.ts, pandoc-wasm, nunjucks. *(Phase 0)*
-- [x] Vendored letter-pro version matches `@local/letter-pro:3.0.0` import. *(Phase 0)*
-- [x] CHANGELOG.md updated under `[Unreleased]`. *(Phase 0)*
+- [x] Vendored letter-pro version matches `@local/letter-pro:3.0.0` import. *(Phase 0–3)*
+- [x] Vendored briefs@0.3.0 and pc-letter@0.4.0 present and verified in CI. *(Phase 3)*
+- [x] CHANGELOG.md updated under `[Unreleased]`. *(Phase 0–3)*
 
 ---
 
@@ -414,7 +535,8 @@ Tests mirror the **template → fill → (md→typst) → assemble → PDF** pip
 | Snapshot | `sample-body.md` | md → typst fragment stable for supported syntax |
 | Parity | `legacy-letter-md-fields.json` | Key field values survive migration to Typst letter-pro layout |
 | Smoke | `typst.worker.ts` | One browser/Vitest worker test that WASM init + compile succeeds |
-| E2E (Phase 3) | Playwright | Form fill → SVG visible → PDF download |
+| E2E (Phase 3) | Playwright | Pick template → fill form → switch template (values kept) → SVG → PDF |
+| Integration | per catalog template | Same fixture → PDF for `letter-pro`, `briefs`, `pc-letter` |
 
 ### Fixture discipline
 
@@ -447,7 +569,8 @@ npm run verify:vendored
 | WASM init fails (network/VPN) | Timeout + friendly error; retry button |
 | Nunjucks + Typst `#`/`[` conflicts | Body injected post-Nunjucks at `/* BODY_INJECT */` |
 | Nunjucks maintenance stagnation | Pin 3.2.4; single adapter module; minimal template syntax only |
-| letter-pro stale / breaking | Pin v3.0.0; vendor script; visual/PDF regression before upgrade |
+| letter-pro / briefs / pc-letter stale or breaking | Pin exact versions; generic vendor script; per-template PDF regression before upgrade |
+| Template APIs differ (sender shape, reference fields) | Shared schema + thin Nunjucks shells; optional fields ignored per template |
 | Monolithic files over time | Phase review gates; 400-line hard limit |
 | typst.ts API churn | Pin version; wrap compile calls in `compileTypst.ts` only |
 
@@ -476,10 +599,11 @@ npm run verify:vendored
 
 - [x] Static SPA with form, SVG preview, PDF download — **Phase 1–2 UI wired; manual browser smoke recommended**
 - [x] Layered `src/` layout (`domain/`, `pipeline/`, `infra/`, `ui/`) *(Phase 0)*
-- [x] `templates/letter.typ` + `letter.schema.json` (Nunjucks + letter-pro) *(Phase 1)*
+- [x] `templates/letter-pro.typ` + shared schema (Nunjucks + letter-pro) *(Phase 1; catalog in Phase 3)*
+- [x] Curated multi-template catalog (letter-pro, briefs, pc-letter) with shared schema *(Phase 3)*
 - [x] Web Workers for typst.ts + pandoc-wasm (lazy) *(Phase 1–2)*
 - [x] Pipeline integration tests: template fill → (md body) → PDF *(Phase 1 plain + Phase 2 markdown)*
-- [ ] Phase review gates passed for Phases 0–3 — **Phases 0–2 passed**
-- [x] README with local dev, deploy, WASM size, GPL note *(Phase 0 — dev workflow; deploy note deferred to Phase 3)*
+- [x] Phase review gates passed for Phases 0–3
+- [x] README with local dev, deploy, WASM size, GPL note *(Phase 0–3)*
 - [x] `CHANGELOG.md` entry *(Phase 0)*
 - [x] `.cursor/notes/architecture.md` updated to match final layout *(Phase 0)*

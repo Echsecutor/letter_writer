@@ -1,6 +1,6 @@
 {
-  "id": "letter",
-  "title": "Standardbrief (DIN 5008)",
+  "id": "shared",
+  "title": "Brief (gemeinsame Felder)",
   "fields": [
     {
       "id": "Absender_Name",
@@ -30,6 +30,12 @@
       "id": "Datum",
       "label": "Datum",
       "type": "date"
+    },
+    {
+      "id": "Ort",
+      "label": "Ort",
+      "type": "text",
+      "placeholder": "z. B. Hürth"
     },
     {
       "id": "Anschreiben",

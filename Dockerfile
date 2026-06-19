@@ -11,7 +11,7 @@ RUN npm ci
 
 COPY . .
 
-RUN bash scripts/vendor-letter-pro.sh && npm run build
+RUN bash scripts/vendor-all-packages.sh && npm run build
 
 FROM nginx:1.27-alpine AS runtime
 

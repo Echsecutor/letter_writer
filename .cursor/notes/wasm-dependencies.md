@@ -14,6 +14,7 @@ Health assessment and integration notes (2026-06). Pin exact versions in `packag
 
 **Browser integration:**
 - Dedicated Web Worker — compile takes 200–800 ms; never block UI thread.
+- Vite: import WASM with `?url` and pass `getModule: () => url` to `compiler.init()` / `renderer.init()` in `workerRuntime.ts` (required in browser; NodeCompiler skips this).
 - Vite: `assetsInclude: ['**/*.wasm']`.
 - Import from `@myriaddreamin/typst.ts/compiler` and `/renderer` for tree-shaking — avoid all-in-one bundle (references `window`).
 - Init once; cache compiler/renderer instances.

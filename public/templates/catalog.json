@@ -1,0 +1,22 @@
+{
+  "templates": [
+    {
+      "id": "letter-pro",
+      "title": "Standardbrief (DIN 5008)",
+      "description": "Formeller Geschäftsbrief nach DIN 5008 mit letter-pro.",
+      "package": "@local/letter-pro:3.0.0"
+    },
+    {
+      "id": "briefs",
+      "title": "Briefs (DIN-inspiriert)",
+      "description": "Schlichter Brief im DIN-Stil mit Fensterumschlag-Ausrichtung.",
+      "package": "@local/briefs:0.3.0"
+    },
+    {
+      "id": "pc-letter",
+      "title": "Persönlicher Brief",
+      "description": "Klassische Korrespondenz mit pc-letter, DIN-kompatibel.",
+      "package": "@local/pc-letter:0.4.0"
+    }
+  ]
+}

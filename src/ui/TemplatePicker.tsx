@@ -1,11 +1,8 @@
-export interface TemplateOption {
-  id: string;
-  title: string;
-}
+import type { TemplateCatalogEntry } from '../domain/templates/schemaTypes';
 
 export interface TemplatePickerProps {
-  templates: TemplateOption[];
-  selectedId: string | null;
+  templates: TemplateCatalogEntry[];
+  selectedId: string;
   onSelect: (templateId: string) => void;
 }
 
@@ -18,7 +15,7 @@ export function TemplatePicker({ templates, selectedId, onSelect }: TemplatePick
       <select
         id="template"
         className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm"
-        value={selectedId ?? ''}
+        value={selectedId}
         onChange={(event) => {
           onSelect(event.target.value);
         }}
@@ -29,6 +26,13 @@ export function TemplatePicker({ templates, selectedId, onSelect }: TemplatePick
           </option>
         ))}
       </select>
+      {templates.map((template) =>
+        template.id === selectedId && template.description ? (
+          <p key={`${template.id}-desc`} className="mt-1 text-xs text-gray-600">
+            {template.description}
+          </p>
+        ) : null,
+      )}
     </div>
   );
 }

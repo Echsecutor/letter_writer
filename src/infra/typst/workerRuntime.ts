@@ -1,3 +1,5 @@
+import compilerWasmUrl from '@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm?url';
+import rendererWasmUrl from '@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url';
 import {
   CompileFormatEnum,
   createTypstCompiler,
@@ -12,39 +14,55 @@ import {
 import { createTypstRenderer, type TypstRenderer } from '@myriaddreamin/typst.ts/renderer';
 import type { CompileResult } from '../../domain/letter/types';
 import {
-  createLocalLetterProRegistry,
-  registerLetterProFiles,
-} from './letterProPackage';
-import { letterProPackageUrlBase } from './letterProPaths';
+  CATALOG_PACKAGES,
+  createLocalPackageRegistry,
+  registerPackageFiles,
+  type CatalogPackage,
+} from './localTypstPackages';
+import { localPackageUrlBase } from './localPackagePaths';
 
 const MAIN_FILE = '/main.typ';
 
 let compilerPromise: Promise<TypstCompiler> | null = null;
 let rendererPromise: Promise<TypstRenderer> | null = null;
 
-async function loadAllPackageFiles(): Promise<Array<{ relativePath: string; content: Uint8Array }>> {
-  const manifestRes = await fetch(`${letterProPackageUrlBase()}/typst.toml`);
-  const libRes = await fetch(`${letterProPackageUrlBase()}/src/lib.typ`);
-
-  if (!manifestRes.ok || !libRes.ok) {
-    throw new Error('Failed to load vendored letter-pro package');
+async function loadPackageFilesFromManifest(
+  spec: CatalogPackage,
+): Promise<Array<{ relativePath: string; content: Uint8Array }>> {
+  const base = localPackageUrlBase(spec);
+  const manifestRes = await fetch(`${base}/.package-manifest.json`);
+  if (!manifestRes.ok) {
+    throw new Error(`Failed to load package manifest for ${spec.name}@${spec.version}`);
   }
 
-  return [
-    { relativePath: 'typst.toml', content: new Uint8Array(await manifestRes.arrayBuffer()) },
-    { relativePath: 'src/lib.typ', content: new Uint8Array(await libRes.arrayBuffer()) },
-  ];
+  const paths = (await manifestRes.json()) as string[];
+  return Promise.all(
+    paths.map(async (relativePath) => {
+      const fileRes = await fetch(`${base}/${relativePath}`);
+      if (!fileRes.ok) {
+        throw new Error(`Failed to load ${spec.name} file ${relativePath}`);
+      }
+      return {
+        relativePath,
+        content: new Uint8Array(await fileRes.arrayBuffer()),
+      };
+    }),
+  );
 }
 
 async function createCompiler(): Promise<TypstCompiler> {
   const accessModel = new MemoryAccessModel();
-  registerLetterProFiles(accessModel, await loadAllPackageFiles());
+
+  for (const spec of CATALOG_PACKAGES) {
+    registerPackageFiles(accessModel, spec, await loadPackageFilesFromManifest(spec));
+  }
 
   const compiler = createTypstCompiler();
   await compiler.init({
+    getModule: () => compilerWasmUrl,
     beforeBuild: [
       withAccessModel(accessModel),
-      withPackageRegistry(createLocalLetterProRegistry()),
+      withPackageRegistry(createLocalPackageRegistry()),
       preloadFontAssets({ assets: ['text'] }),
     ],
   });
@@ -54,7 +72,10 @@ async function createCompiler(): Promise<TypstCompiler> {
 
 async function createRenderer(): Promise<TypstRenderer> {
   const renderer = createTypstRenderer();
-  await renderer.init({ beforeBuild: [] });
+  await renderer.init({
+    getModule: () => rendererWasmUrl,
+    beforeBuild: [],
+  });
   return renderer;
 }
 

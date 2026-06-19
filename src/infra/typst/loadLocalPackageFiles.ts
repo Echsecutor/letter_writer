@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { CatalogPackage } from './localTypstPackages';
 
 export interface PackageFile {
   relativePath: string;
@@ -16,7 +17,7 @@ function walkPackageDir(dir: string, relativeBase = ''): PackageFile[] {
   const files: PackageFile[] = [];
 
   for (const name of readdirSync(dir)) {
-    if (name === '.git') {
+    if (name === '.git' || name === '.package-manifest.json') {
       continue;
     }
 
@@ -37,10 +38,12 @@ function walkPackageDir(dir: string, relativeBase = ''): PackageFile[] {
   return files;
 }
 
-export function loadLetterProPackageFiles(): PackageFile[] {
+export function loadLocalPackageFiles(spec: Pick<CatalogPackage, 'name' | 'version'>): PackageFile[] {
   const packageRoot = path.join(
     repoRoot,
-    'public/typst-packages/local/letter-pro/3.0.0',
+    'public/typst-packages/local',
+    spec.name,
+    spec.version,
   );
   return walkPackageDir(packageRoot);
 }

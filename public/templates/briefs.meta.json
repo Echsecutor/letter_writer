@@ -1,0 +1,7 @@
+{
+  "extends": "shared",
+  "id": "briefs",
+  "title": "Briefs (DIN-inspiriert)",
+  "description": "Schlichter Brief im DIN-Stil mit Fensterumschlag-Ausrichtung.",
+  "package": "@local/briefs:0.3.0"
+}

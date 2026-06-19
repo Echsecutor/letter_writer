@@ -1,0 +1,7 @@
+{
+  "extends": "shared",
+  "id": "pc-letter",
+  "title": "Persönlicher Brief",
+  "description": "Klassische Korrespondenz mit pc-letter, DIN-kompatibel.",
+  "package": "@local/pc-letter:0.4.0"
+}

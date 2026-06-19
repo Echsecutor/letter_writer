@@ -1,0 +1,6 @@
+{
+  "extends": "shared",
+  "id": "briefs",
+  "title": "Briefs (DIN-inspiriert)",
+  "fields": []
+}

@@ -17,6 +17,21 @@ export interface LetterSchema {
   id: string;
   title: string;
   fields: SchemaField[];
+  extends?: string;
+  description?: string;
+  package?: string;
+}
+
+export interface TemplateCatalogEntry {
+  id: string;
+  title: string;
+  description: string;
+  package: string;
+  preview?: string;
+}
+
+export interface TemplateCatalog {
+  templates: TemplateCatalogEntry[];
 }
 
 export interface LoadedTemplate {

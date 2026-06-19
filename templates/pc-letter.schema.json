@@ -1,0 +1,6 @@
+{
+  "extends": "shared",
+  "id": "pc-letter",
+  "title": "Persönlicher Brief",
+  "fields": []
+}

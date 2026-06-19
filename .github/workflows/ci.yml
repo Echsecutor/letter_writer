@@ -25,10 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Vendor letter-pro
-        run: bash scripts/vendor-letter-pro.sh
+      - name: Vendor catalog packages
+        run: bash scripts/vendor-all-packages.sh
 
-      - name: Verify vendored letter-pro
+      - name: Verify vendored packages
         run: npm run verify:vendored
 
       - name: Lint
@@ -39,6 +39,9 @@ jobs:
 
       - name: Scaffold tests
         run: npm run test:scaffold
+
+      - name: Full test suite
+        run: npm run test
 
   docker:
     needs: verify

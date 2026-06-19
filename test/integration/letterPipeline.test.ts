@@ -8,27 +8,32 @@ import legacyFields from '../fixtures/legacy-letter-md-fields.json';
 import { fixturePath } from '../helpers/paths';
 import { pdfContainsAllText } from '../helpers/pdfText';
 
-describe('letterPipeline integration', () => {
-  it('produces a valid PDF from fixture form values (plain body)', async () => {
-    const output = await runLetterPipeline(
-      {
-        templateId: 'letter',
-        values: formValues,
-        bodyMode: 'plain',
-      },
-      { typstCompiler: nodeTypstCompiler },
-    );
+const CATALOG_TEMPLATE_IDS = ['letter-pro', 'briefs', 'pc-letter'] as const;
 
-    expect(output.mainContent).not.toContain('/* BODY_INJECT */');
-    expect(output.compile.pdf.byteLength).toBeGreaterThan(1000);
-    expect(String.fromCharCode(...output.compile.pdf.slice(0, 4))).toBe('%PDF');
-  });
+describe('letterPipeline integration', () => {
+  it.each(CATALOG_TEMPLATE_IDS)(
+    'produces a valid PDF from fixture form values for %s',
+    async (templateId) => {
+      const output = await runLetterPipeline(
+        {
+          templateId,
+          values: formValues,
+          bodyMode: 'plain',
+        },
+        { typstCompiler: nodeTypstCompiler },
+      );
+
+      expect(output.mainContent).not.toContain('/* BODY_INJECT */');
+      expect(output.compile.pdf.byteLength).toBeGreaterThan(1000);
+      expect(String.fromCharCode(...output.compile.pdf.slice(0, 4))).toBe('%PDF');
+    },
+  );
 
   it('produces a valid PDF with markdown body via pandoc converter', async () => {
     const markdownBody = readFileSync(fixturePath('sample-body.md'), 'utf8');
     const output = await runLetterPipeline(
       {
-        templateId: 'letter',
+        templateId: 'letter-pro',
         values: { ...formValues, Anschreiben: markdownBody },
         bodyMode: 'markdown',
       },
@@ -47,7 +52,7 @@ describe('letterPipeline integration', () => {
   it('legacy letter.md field values survive migration to Typst PDF', async () => {
     const output = await runLetterPipeline(
       {
-        templateId: 'letter',
+        templateId: 'letter-pro',
         values: {
           Absender_Name: legacyFields.Absender_Name,
           Absender_Adresse: legacyFields.Rueckadresse,

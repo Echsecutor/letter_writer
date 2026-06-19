@@ -1,23 +1,43 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppLayout } from './AppLayout';
+import { DEFAULT_TEMPLATE_ID } from '../domain/letter/types';
+import { loadCatalog } from '../domain/templates/loadCatalog';
 import { loadTemplate } from '../domain/templates/loadTemplate';
-import type { LetterSchema } from '../domain/templates/schemaTypes';
+import type { LetterSchema, TemplateCatalogEntry } from '../domain/templates/schemaTypes';
 import { useDraftPersistence } from '../hooks/useDraftPersistence';
 import { useLetterPipeline } from '../hooks/useLetterPipeline';
 import { BodyModeToggle } from '../ui/BodyModeToggle';
 import { DownloadButton } from '../ui/DownloadButton';
 import { LetterForm } from '../ui/LetterForm';
+import { ReferenceFields } from '../ui/ReferenceFields';
 import { TemplatePicker } from '../ui/TemplatePicker';
 import { TypstPreview } from '../ui/TypstPreview';
 
-const DEFAULT_TEMPLATE_ID = 'letter';
-
 export function App() {
-  const [templateId, setTemplateId] = useState(DEFAULT_TEMPLATE_ID);
+  const { templateId, values, bodyMode, setTemplateId, setField, setBodyMode } =
+    useDraftPersistence();
+  const [catalog, setCatalog] = useState<TemplateCatalogEntry[]>([]);
   const [schema, setSchema] = useState<LetterSchema | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { values, bodyMode, setField, setBodyMode, resetForTemplate } =
-    useDraftPersistence(templateId);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadCatalog()
+      .then((entries) => {
+        if (!cancelled) {
+          setCatalog(entries);
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setLoadError(error instanceof Error ? error.message : 'Catalog load failed');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,27 +86,31 @@ export function App() {
     URL.revokeObjectURL(url);
   };
 
+  const catalogEntries =
+    catalog.length > 0
+      ? catalog
+      : [{ id: DEFAULT_TEMPLATE_ID, title: 'Standardbrief', description: '', package: '' }];
+
   return (
     <AppLayout>
       <div className="grid gap-6 lg:grid-cols-[2fr_3fr]">
         <section className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
           <TemplatePicker
-            templates={[{ id: DEFAULT_TEMPLATE_ID, title: schema?.title ?? 'Standardbrief' }]}
+            templates={catalogEntries}
             selectedId={templateId}
-            onSelect={(nextTemplateId) => {
-              setTemplateId(nextTemplateId);
-              resetForTemplate(nextTemplateId);
-            }}
+            onSelect={setTemplateId}
           />
           {loadError ? (
             <p className="text-sm text-red-700">{loadError}</p>
           ) : (
             <>
               <BodyModeToggle mode={bodyMode} onChange={setBodyMode} />
-              <LetterForm
-                fields={schema?.fields ?? []}
-                values={values}
-                onChange={setField}
+              <LetterForm fields={schema?.fields ?? []} values={values} onChange={setField} />
+              <ReferenceFields
+                value={values.reference_signs}
+                onChange={(nextValue) => {
+                  setField('reference_signs', nextValue);
+                }}
               />
             </>
           )}

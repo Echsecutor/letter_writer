@@ -1,0 +1,7 @@
+{
+  "extends": "shared",
+  "id": "letter-pro",
+  "title": "Standardbrief (DIN 5008)",
+  "description": "Formeller Geschäftsbrief nach DIN 5008 mit letter-pro.",
+  "package": "@local/letter-pro:3.0.0"
+}

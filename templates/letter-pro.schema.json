@@ -1,0 +1,6 @@
+{
+  "extends": "shared",
+  "id": "letter-pro",
+  "title": "Standardbrief (DIN 5008)",
+  "fields": []
+}
