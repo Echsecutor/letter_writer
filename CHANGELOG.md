@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Letter date output uses German formatting (`02.01.2026`) and `Ort, den DD.MM.YYYY` when place is set
 
 ### Fixed
+- Removed unnecessary guard in `ReferenceFields.removeRow` that failed ESLint `@typescript-eslint/no-unnecessary-condition`
 - Bezugszeichen rows and letter output only appear when a value is entered
 - Typst WASM preview and PDF download in the browser by passing Vite-bundled `getModule` URLs to the compiler and renderer init
 - Pipeline errors no longer stuck behind infinite "Vorschau wird erstellt…" loading state (`useLetterPipeline` marks failed inputs as resolved)

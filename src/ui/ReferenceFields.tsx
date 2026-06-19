@@ -59,9 +59,6 @@ export function ReferenceFields({ value, onChange }: ReferenceFieldsProps) {
 
   const removeRow = (index: number) => {
     const row = rows[index];
-    if (!row) {
-      return;
-    }
 
     if (isStandardRow(index)) {
       setExpandedStandards((current) => {
