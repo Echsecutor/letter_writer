@@ -56,4 +56,6 @@ Implementation phases, review gates, test fixtures: [letter_writer_web_app.md](.
 
 **Phase 0 (complete):** Vite/React/Tailwind/Vitest scaffold, full module skeleton, `workerProtocol.ts`, vendor scripts, CI.
 
-**Phase 1 (complete):** Nunjucks fill, plain-text body, typst worker + NodeCompiler tests, form/preview/download UI, localStorage drafts. Next: Phase 2 (`pandoc-wasm` markdown body).
+**Phase 1 (complete):** Nunjucks fill, plain-text body, typst worker + NodeCompiler tests, form/preview/download UI, localStorage drafts.
+
+**Phase 2 (complete):** Markdown body via lazy `pandoc.worker` + `convertBody` stage; `BodyModeToggle` UI; Node pandoc adapter for CI. Next: Phase 3 (polish, multi-template, deploy).

@@ -1,3 +1,4 @@
+import { convertMarkdownBody } from '../pandoc/pandocWasm';
 import type {
   PandocRequest,
   PandocResponse,
@@ -8,14 +9,20 @@ function errorResponse(id: string, message: string): WorkerErrorResponse {
   return { type: 'error', id, message };
 }
 
-function handlePandocRequest(
+async function handlePandocRequest(
   request: PandocRequest,
-): PandocResponse | WorkerErrorResponse {
+): Promise<PandocResponse | WorkerErrorResponse> {
   switch (request.type) {
     case 'pandoc:init':
       return { type: 'pandoc:init', id: request.id, ok: true };
-    case 'pandoc:convert':
-      return errorResponse(request.id, 'Not implemented (Phase 2): pandoc convert');
+    case 'pandoc:convert': {
+      const bodyTypst = await convertMarkdownBody(request.markdown);
+      return {
+        type: 'pandoc:convert',
+        id: request.id,
+        bodyTypst,
+      };
+    }
     default: {
       const _exhaustive: never = request;
       return errorResponse(
@@ -27,13 +34,15 @@ function handlePandocRequest(
 }
 
 self.onmessage = (event: MessageEvent<PandocRequest>) => {
-  try {
-    const response = handlePandocRequest(event.data);
-    self.postMessage(response);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown worker error';
-    self.postMessage(errorResponse(event.data.id, message));
-  }
+  void (async () => {
+    try {
+      const response = await handlePandocRequest(event.data);
+      self.postMessage(response);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown worker error';
+      self.postMessage(errorResponse(event.data.id, message));
+    }
+  })();
 };
 
 export {};

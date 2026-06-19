@@ -316,7 +316,7 @@ Each phase ends with a **mandatory review gate** (see next section). Do not star
 
 **Phase 0 review gate** — passed (2026-06-19). See checklist below; Phase 0–specific items checked.
 
-**Notes:** Scaffold tests (`npm run test:scaffold`) pass; full `npm run test` has 6 expected failures until Phase 1/2. Placeholder `templates/letter.typ` + `letter.schema.json` present; full Nunjucks/letter-pro content lands in Phase 1.
+**Notes:** Scaffold tests (`npm run test:scaffold`) pass; full `npm run test` covers Phase 1–2 stages.
 
 ### Phase 1 — Template fill + Typst preview/PDF (plain-text body only) ✅ Complete (2026-06-19)
 
@@ -332,21 +332,23 @@ Each phase ends with a **mandatory review gate** (see next section). Do not star
 
 **Phase 1 review gate** — passed (2026-06-19). Phase 1 checklist items checked below.
 
-**Notes:** `convertBody` remains a Phase 2 stub (1 expected failing test). Browser bundle uses `typst.worker` + fetch-based `loadTemplate`; Node tests alias `loadTemplate.node.ts`. NodeCompiler resolves `@local/letter-pro` via `public/typst-data/typst/packages/local/letter-pro` symlink created by `vendor-letter-pro.sh`.
+**Notes:** Browser bundle uses `typst.worker` + fetch-based `loadTemplate`; Node tests alias `loadTemplate.node.ts`. NodeCompiler resolves `@local/letter-pro` via `public/typst-data/typst/packages/local/letter-pro` symlink created by `vendor-letter-pro.sh`. Body conversion extended in Phase 2.
 
-### Phase 2 — Markdown body conversion
+### Phase 2 — Markdown body conversion ✅ Complete (2026-06-19)
 
-1. `pandoc.worker.ts` + `pandocConverter.ts` behind `BodyConverter` interface.
-2. Wire `convertBody` stage; lazy-load pandoc on first markdown body.
-3. UI toggle: plain text vs markdown body mode.
+1. ✅ `pandoc.worker.ts` + `pandocConverter.ts` / `pandocWasm.ts` behind `BodyConverter` interface.
+2. ✅ Wire `convertBody` stage; lazy-load pandoc worker on first markdown body (`pandocClient.ts`).
+3. ✅ UI toggle: plain text vs markdown body mode (`BodyModeToggle.tsx`); persisted in localStorage.
 4. **Tests (required before gate):**
-   - Unit: `convertBody` with mocked converter; pandoc converter with fixture md (run in Node if pandoc-wasm works in Vitest, else worker integration test).
-   - Fixture: `sample-body.md` → typst fragment snapshot (headings, bold, list — document supported subset).
-   - **Full pipeline integration:** `sample-form-values.json` + `sample-body.md` → assemble → PDF via node compiler.
-   - **Legacy parity (light):** same semantic content as `templates/letter.md` example fields produces PDF containing key strings (subject, recipient line, sender name) — extract text via simple PDF string scan or snapshot hash stored in fixture.
-   - Regression: ensure `/* BODY_INJECT */` marker never appears in compiled output.
+   - ✅ Unit: `convertBody` with mocked converter; plain/empty routing.
+   - ✅ Unit: `nodePandocConverterFactory` with `sample-body.md` → `expected-body.typ` snapshot.
+   - ✅ **Full pipeline integration:** `sample-form-values.json` + `sample-body.md` → assemble → PDF via node compiler.
+   - ✅ **Legacy parity (light):** legacy field values in Typst source + PDF text scan for subject/sender.
+   - ✅ Regression: `/* BODY_INJECT */` marker never appears in compiled output.
 
-**Phase 2 review gate**
+**Phase 2 review gate** — passed (2026-06-19). Phase 2 checklist items checked below.
+
+**Notes:** Pandoc runs in Node via `pandoc-wasm` for CI; browser uses dedicated worker (lazy, ~16 MB gzip WASM). `letterPipeline` Phase 1 gap fixed: body now flows through `convertBody`. Recipient text verified in assembled Typst (PDF simple scan unreliable for all fields).
 
 ### Phase 3 — Polish & multi-template validation
 
@@ -377,14 +379,14 @@ Run this checklist before merging / starting the next phase. Fix all failures be
 ### Pipeline & architecture
 
 - [x] `letterPipeline.ts` is the single orchestrator; stages are independently unit-tested. *(Phase 0–1)*
-- [x] Body converter swappable via interface (pandoc vs plain text verified). *(Phase 0 — plain text path live in Phase 1)*
+- [x] Body converter swappable via interface (pandoc vs plain text verified). *(Phase 2)*
 - [x] Template addition requires only new files under `templates/`, not changes to orchestrator. *(Phase 0–1)*
 - [x] Worker messages use `workerProtocol.ts` types only. *(Phase 0–1)*
 
 ### Tests
 
-- [x] All unit tests for completed stages pass. *(Phase 1 — except Phase 2 `convertBody` stub)*
-- [x] Integration test covers **every implemented stage** in sequence for the phase. *(Phase 1)*
+- [x] All unit tests for completed stages pass. *(Phase 1–2)*
+- [x] Integration test covers **every implemented stage** in sequence for the phase. *(Phase 1–2)*
 - [x] PDF output tests assert: non-empty, valid `%PDF` header, and content checks for fixture data. *(Phase 1)*
 - [x] No tests skipped without tracked issue link. *(Phase 0 — placeholders fail explicitly, not skipped)*
 
@@ -472,12 +474,12 @@ npm run verify:vendored
 
 ## Key Deliverables
 
-- [ ] Static SPA with form, SVG preview, PDF download — **Phase 1 UI wired; manual browser smoke recommended**
+- [x] Static SPA with form, SVG preview, PDF download — **Phase 1–2 UI wired; manual browser smoke recommended**
 - [x] Layered `src/` layout (`domain/`, `pipeline/`, `infra/`, `ui/`) *(Phase 0)*
 - [x] `templates/letter.typ` + `letter.schema.json` (Nunjucks + letter-pro) *(Phase 1)*
-- [x] Web Workers for typst.ts + pandoc-wasm (lazy) — typst worker live; pandoc stub *(Phase 1/2)*
-- [x] Pipeline integration tests: template fill → (md body) → PDF — plain-body path *(Phase 1)*
-- [ ] Phase review gates passed for Phases 0–3 — **Phases 0–1 passed**
+- [x] Web Workers for typst.ts + pandoc-wasm (lazy) *(Phase 1–2)*
+- [x] Pipeline integration tests: template fill → (md body) → PDF *(Phase 1 plain + Phase 2 markdown)*
+- [ ] Phase review gates passed for Phases 0–3 — **Phases 0–2 passed**
 - [x] README with local dev, deploy, WASM size, GPL note *(Phase 0 — dev workflow; deploy note deferred to Phase 3)*
 - [x] `CHANGELOG.md` entry *(Phase 0)*
 - [x] `.cursor/notes/architecture.md` updated to match final layout *(Phase 0)*

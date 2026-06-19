@@ -58,6 +58,6 @@ Field types: `text`, `textarea`, `markdown` (body), grouped `references`.
 ## Body conversion modes
 
 1. **Plain text** — `plainTextToTypst()` in JS (Phase 1; no pandoc).
-2. **Markdown** — `pandoc-wasm` md→typst fragment (Phase 2; lazy worker).
+2. **Markdown** — `pandoc-wasm` md→typst fragment via lazy worker (Phase 2).
 
 Both feed `assembleDocument` at `/* BODY_INJECT */`.

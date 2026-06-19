@@ -16,11 +16,11 @@ Client-only letter-writing SPA: **Typst WASM + letter-pro** for DIN 5008 PDF/pre
 | Path | Purpose |
 |------|---------|
 | `src/app/` | App shell (`App.tsx`, `AppLayout.tsx`) |
-| `src/ui/` | Presentational components (no pipeline imports) |
+| `src/ui/` | Presentational components (`BodyModeToggle`, form, preview, download — no pipeline imports) |
 | `src/hooks/` | `useLetterPipeline` (debounced worker pipeline), `useDraftPersistence` (localStorage) |
 | `src/domain/` | Pure TS: context, escape, schema, Nunjucks adapter |
 | `src/pipeline/` | Orchestrator + stages + body converters |
-| `src/infra/` | Workers (`workerProtocol.ts`, `typst.worker.ts`, `typstClient.ts`), `nodeCompiler.ts`, `workerRuntime.ts` |
+| `src/infra/` | Workers (`workerProtocol.ts`, `typst.worker.ts`, `typstClient.ts`, `pandoc.worker.ts`, `pandocClient.ts`), `pandoc/pandocWasm.ts`, `nodeCompiler.ts`, `workerRuntime.ts` |
 | `templates/` | `letter.typ` + `letter.schema.json` (Nunjucks + letter-pro) |
 | `test/fixtures/` | Golden inputs + expected Typst/PDF assertions |
 | `public/typst-packages/` | Vendored letter-pro (`@local/letter-pro:3.0.0`) |

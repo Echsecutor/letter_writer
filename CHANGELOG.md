@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Phase 2: Markdown body conversion via lazy-loaded `pandoc.worker.ts` and `pandocClient.ts`
+- Phase 2: `convertBody` stage with injectable `BodyConverter`; `nodePandocConverter` for CI tests
+- Phase 2: `BodyModeToggle` UI (plain text vs Markdown) with `bodyMode` persisted in localStorage drafts
+- Phase 2: Golden fixture `expected-body.typ` and integration tests (markdown pipeline, legacy parity)
 - Multi-stage `Dockerfile` and `docker-compose.yml` to build the Vite app and serve static output with nginx Alpine
 - `docker/nginx.conf` for static asset caching and WASM MIME serving
 - Phase 1: Nunjucks template fill (`letter.typ`, `buildContext`, `fillTemplate`, `assembleDocument`)
@@ -33,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `letterPipeline.ts` routes body text through `convertBody` (fixes Phase 1 gap where `bodyMode` was ignored)
+- Mark Phase 2 complete in implementation plan (review gate passed)
 - Mark Phase 1 complete in implementation plan (review gate passed)
 - Mark Phase 0 complete in implementation plan (review gate passed)
 - `vendor-letter-pro.sh` / `verify-vendored-letter-pro.sh` ensure NodeCompiler `@local/letter-pro` symlink under `public/typst-data/`

@@ -4,6 +4,7 @@ import { loadTemplate } from '../domain/templates/loadTemplate';
 import type { LetterSchema } from '../domain/templates/schemaTypes';
 import { useDraftPersistence } from '../hooks/useDraftPersistence';
 import { useLetterPipeline } from '../hooks/useLetterPipeline';
+import { BodyModeToggle } from '../ui/BodyModeToggle';
 import { DownloadButton } from '../ui/DownloadButton';
 import { LetterForm } from '../ui/LetterForm';
 import { TemplatePicker } from '../ui/TemplatePicker';
@@ -15,7 +16,8 @@ export function App() {
   const [templateId, setTemplateId] = useState(DEFAULT_TEMPLATE_ID);
   const [schema, setSchema] = useState<LetterSchema | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { values, setField, resetForTemplate } = useDraftPersistence(templateId);
+  const { values, bodyMode, setField, setBodyMode, resetForTemplate } =
+    useDraftPersistence(templateId);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,9 +47,9 @@ export function App() {
     return {
       templateId,
       values,
-      bodyMode: 'plain' as const,
+      bodyMode,
     };
-  }, [schema, templateId, values]);
+  }, [schema, templateId, values, bodyMode]);
 
   const { output, loading, error } = useLetterPipeline(pipelineInput);
 
@@ -79,11 +81,14 @@ export function App() {
           {loadError ? (
             <p className="text-sm text-red-700">{loadError}</p>
           ) : (
-            <LetterForm
-              fields={schema?.fields ?? []}
-              values={values}
-              onChange={setField}
-            />
+            <>
+              <BodyModeToggle mode={bodyMode} onChange={setBodyMode} />
+              <LetterForm
+                fields={schema?.fields ?? []}
+                values={values}
+                onChange={setField}
+              />
+            </>
           )}
           <DownloadButton
             disabled={!output?.compile.pdf || loading}

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LetterInput, LetterOutput } from '../domain/letter/types';
-import { runLetterPipeline } from '../pipeline/letterPipeline';
+import { workerPandocConverterFactory } from '../infra/workers/pandocClient';
 import { workerTypstCompiler } from '../infra/workers/typstClient';
+import { runLetterPipeline } from '../pipeline/letterPipeline';
 
 const DEBOUNCE_MS = 300;
 
@@ -37,7 +38,10 @@ export function useLetterPipeline(input: LetterInput | null): UseLetterPipelineR
       setLoading(true);
       setError(null);
 
-      void runLetterPipeline(input, { typstCompiler: workerTypstCompiler })
+      void runLetterPipeline(input, {
+        typstCompiler: workerTypstCompiler,
+        markdownConverter: workerPandocConverterFactory,
+      })
         .then((result) => {
           if (requestIdRef.current !== requestId) {
             return;
