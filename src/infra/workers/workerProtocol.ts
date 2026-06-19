@@ -23,7 +23,7 @@ export interface TypstCompileRequest {
   type: 'typst:compile';
   id: string;
   source: string;
-  format: 'svg' | 'pdf';
+  format: 'svg' | 'pdf' | 'both';
 }
 
 export interface TypstCompileSvgResponse {
@@ -40,7 +40,18 @@ export interface TypstCompilePdfResponse {
   pdf: Uint8Array;
 }
 
-export type TypstCompileResponse = TypstCompileSvgResponse | TypstCompilePdfResponse;
+export interface TypstCompileBothResponse {
+  type: 'typst:compile';
+  id: string;
+  format: 'both';
+  svg: string;
+  pdf: Uint8Array;
+}
+
+export type TypstCompileResponse =
+  | TypstCompileSvgResponse
+  | TypstCompilePdfResponse
+  | TypstCompileBothResponse;
 
 export type TypstRequest = TypstInitRequest | TypstCompileRequest;
 export type TypstResponse = TypstInitResponse | TypstCompileResponse | WorkerErrorResponse;

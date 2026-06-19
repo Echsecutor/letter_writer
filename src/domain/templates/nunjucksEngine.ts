@@ -1,5 +1,6 @@
-import { NotImplementedError, PHASE_1 } from '../notImplemented';
-import { stubArg } from '../stubArg';
+import nunjucks from 'nunjucks';
+
+const env = nunjucks.configure({ autoescape: false, throwOnUndefined: false });
 
 export interface RenderTemplateInput {
   shell: string;
@@ -7,6 +8,5 @@ export interface RenderTemplateInput {
 }
 
 export function renderTemplate(input: RenderTemplateInput): string {
-  stubArg(input);
-  throw new NotImplementedError(PHASE_1, 'nunjucksEngine.renderTemplate');
+  return env.renderString(input.shell, input.context);
 }

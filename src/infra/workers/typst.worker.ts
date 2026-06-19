@@ -3,17 +3,36 @@ import type {
   TypstResponse,
   WorkerErrorResponse,
 } from './workerProtocol';
+import {
+  compileTypstInWorkerRuntime,
+  initTypstWorkerRuntime,
+} from '../typst/workerRuntime';
 
 function errorResponse(id: string, message: string): WorkerErrorResponse {
   return { type: 'error', id, message };
 }
 
-function handleTypstRequest(request: TypstRequest): TypstResponse | WorkerErrorResponse {
+async function handleTypstRequest(request: TypstRequest): Promise<TypstResponse | WorkerErrorResponse> {
   switch (request.type) {
     case 'typst:init':
+      await initTypstWorkerRuntime();
       return { type: 'typst:init', id: request.id, ok: true };
-    case 'typst:compile':
-      return errorResponse(request.id, 'Not implemented (Phase 1): typst compile');
+    case 'typst:compile': {
+      const result = await compileTypstInWorkerRuntime(request.source);
+      if (request.format === 'svg') {
+        return { type: 'typst:compile', id: request.id, format: 'svg', svg: result.svg };
+      }
+      if (request.format === 'pdf') {
+        return { type: 'typst:compile', id: request.id, format: 'pdf', pdf: result.pdf };
+      }
+      return {
+        type: 'typst:compile',
+        id: request.id,
+        format: 'both',
+        svg: result.svg,
+        pdf: result.pdf,
+      };
+    }
     default: {
       const _exhaustive: never = request;
       return errorResponse(
@@ -25,13 +44,15 @@ function handleTypstRequest(request: TypstRequest): TypstResponse | WorkerErrorR
 }
 
 self.onmessage = (event: MessageEvent<TypstRequest>) => {
-  try {
-    const response = handleTypstRequest(event.data);
-    self.postMessage(response);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown worker error';
-    self.postMessage(errorResponse(event.data.id, message));
-  }
+  void (async () => {
+    try {
+      const response = await handleTypstRequest(event.data);
+      self.postMessage(response);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown worker error';
+      self.postMessage(errorResponse(event.data.id, message));
+    }
+  })();
 };
 
 export {};

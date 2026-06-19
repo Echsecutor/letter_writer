@@ -1,0 +1,8 @@
+services:
+  letter-writer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${LETTER_WRITER_PORT:-8080}:80"
+    restart: unless-stopped

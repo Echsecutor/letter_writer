@@ -1,0 +1,41 @@
+{
+  "id": "letter",
+  "title": "Standardbrief (DIN 5008)",
+  "fields": [
+    {
+      "id": "Absender_Name",
+      "label": "Absender Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "Absender_Adresse",
+      "label": "Absender Adresse",
+      "type": "text",
+      "default": "Berrenrather Str. 150, 50354 Hürth"
+    },
+    {
+      "id": "Empfaenger",
+      "label": "Empfänger",
+      "type": "textarea",
+      "required": true
+    },
+    {
+      "id": "Betreff",
+      "label": "Betreff",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "Datum",
+      "label": "Datum",
+      "type": "date"
+    },
+    {
+      "id": "Anschreiben",
+      "label": "Anschreiben",
+      "type": "textarea",
+      "required": true
+    }
+  ]
+}

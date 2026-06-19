@@ -21,6 +21,8 @@ Single-project Vite/React app at the repo root.
 | `.cursor/plans/` | [Implementation plan](.cursor/plans/letter_writer_web_app.md) |
 | `.cursor/notes/` | Developer notes ([index](.cursor/notes/index.md)) |
 | `.github/workflows/ci.yml` | Lint, build, vendored check, scaffold tests |
+| `Dockerfile`, `docker-compose.yml` | Container build (Node 22) and nginx static serving |
+| `docker/nginx.conf` | Runtime web server config for the production image |
 | `LICENSE.txt` | AGPL-3.0 |
 
 Legacy pandoc/LaTeX draft: `templates/letter.md` (parity reference only).
@@ -48,6 +50,16 @@ npm run lint
 npm run build           # static output for CDN deploy
 npm run verify:vendored # check letter-pro is present
 ```
+
+### Docker
+
+Build and serve the production static bundle (same steps as CI: vendor letter-pro, typecheck, Vite build):
+
+```bash
+docker compose up --build
+```
+
+Open http://localhost:8080 (override host port with `LETTER_WRITER_PORT=3000 docker compose up --build`).
 
 **First-load size (planned):** ~15 MB without pandoc; ~30 MB with pandoc-wasm (GPL-2.0, lazy-loaded). See the [implementation plan](.cursor/plans/letter_writer_web_app.md).
 

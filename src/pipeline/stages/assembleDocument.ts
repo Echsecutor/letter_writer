@@ -1,6 +1,3 @@
-import { NotImplementedError, PHASE_1 } from '../../domain/notImplemented';
-import { stubArg } from '../../domain/stubArg';
-
 export const BODY_INJECT_MARKER = '/* BODY_INJECT */';
 
 export interface AssembleDocumentInput {
@@ -13,6 +10,11 @@ export interface AssembleDocumentOutput {
 }
 
 export function assembleDocument(input: AssembleDocumentInput): AssembleDocumentOutput {
-  stubArg(input);
-  throw new NotImplementedError(PHASE_1, 'assembleDocument');
+  if (!input.filledShell.includes(BODY_INJECT_MARKER)) {
+    throw new Error(`Filled shell is missing ${BODY_INJECT_MARKER}`);
+  }
+
+  return {
+    mainContent: input.filledShell.replace(BODY_INJECT_MARKER, input.bodyTypst),
+  };
 }

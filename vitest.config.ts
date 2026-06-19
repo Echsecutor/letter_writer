@@ -8,9 +8,16 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: {
-      '@': path.resolve(rootDir, 'src'),
-    },
+    alias: [
+      {
+        find: '@/domain/templates/loadTemplate',
+        replacement: path.resolve(rootDir, 'src/domain/templates/loadTemplate.node.ts'),
+      },
+      {
+        find: '@',
+        replacement: path.resolve(rootDir, 'src'),
+      },
+    ],
   },
   test: {
     environment: 'node',

@@ -1,7 +1,18 @@
-import { NotImplementedError, PHASE_1 } from '../notImplemented';
-import { stubArg } from '../stubArg';
+import { typstEscape } from './typstEscape';
 
 export function plainTextToTypst(text: string): string {
-  stubArg(text);
-  throw new NotImplementedError(PHASE_1, 'plainTextToTypst');
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  return trimmed
+    .split(/\n{2,}/)
+    .map((paragraph) =>
+      paragraph
+        .split('\n')
+        .map((line) => typstEscape(line))
+        .join('\n'),
+    )
+    .join('\n\n');
 }

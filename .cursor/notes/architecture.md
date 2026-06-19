@@ -54,4 +54,6 @@ Messages typed in `workerProtocol.ts`.
 
 Implementation phases, review gates, test fixtures: [letter_writer_web_app.md](../plans/letter_writer_web_app.md).
 
-**Phase 0 (complete):** Vite/React/Tailwind/Vitest scaffold, full module skeleton, `workerProtocol.ts`, vendor scripts, CI, placeholder tests.
+**Phase 0 (complete):** Vite/React/Tailwind/Vitest scaffold, full module skeleton, `workerProtocol.ts`, vendor scripts, CI.
+
+**Phase 1 (complete):** Nunjucks fill, plain-text body, typst worker + NodeCompiler tests, form/preview/download UI, localStorage drafts. Next: Phase 2 (`pandoc-wasm` markdown body).

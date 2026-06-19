@@ -1,6 +1,5 @@
-import { NotImplementedError, PHASE_1 } from '../../domain/notImplemented';
-import { stubArg } from '../../domain/stubArg';
 import type { LetterContext } from '../../domain/letter/types';
+import { renderTemplate } from '../../domain/templates/nunjucksEngine';
 
 export interface FillTemplateInput {
   shell: string;
@@ -12,6 +11,7 @@ export interface FillTemplateOutput {
 }
 
 export function fillTemplate(input: FillTemplateInput): FillTemplateOutput {
-  stubArg(input);
-  throw new NotImplementedError(PHASE_1, 'fillTemplate');
+  return {
+    filledShell: renderTemplate({ shell: input.shell, context: input.context }),
+  };
 }
