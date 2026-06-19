@@ -38,6 +38,11 @@
       "placeholder": "z. B. Hürth"
     },
     {
+      "id": "Unterschrift",
+      "label": "Unterschrift (Bild)",
+      "type": "image"
+    },
+    {
       "id": "Anschreiben",
       "label": "Anschreiben",
       "type": "textarea",

@@ -51,6 +51,7 @@ function sendRequest(payload: {
   type: string;
   format?: 'svg' | 'pdf' | 'both';
   source?: string;
+  shadowFiles?: CompileTypstInput['shadowFiles'];
 }): Promise<TypstResponse> {
   const id = createRequestId();
   return new Promise((resolve, reject) => {
@@ -82,6 +83,7 @@ export const workerTypstCompiler: TypstCompiler = {
         type: 'typst:compile',
         format: 'both',
         source: input.mainContent,
+        shadowFiles: input.shadowFiles,
       }),
     );
 

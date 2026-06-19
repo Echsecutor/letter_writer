@@ -3,6 +3,10 @@ export interface ReferenceSign {
   value: string;
 }
 
+export interface ReferenceSignDisplay {
+  display: string;
+}
+
 /** Form values merged with computed Typst-ready fields for Nunjucks. */
 export interface LetterContext {
   Absender_Name: string;
@@ -13,14 +17,19 @@ export interface LetterContext {
   Empfaenger_typst: string;
   Betreff: string;
   Datum: string;
+  Datum_de: string;
+  Datum_ort_line: string;
   Datum_datetime_typst: string;
   Ort: string;
   Anschreiben: string;
   reference_signs: ReferenceSign[];
+  letter_pro_reference_signs: ReferenceSignDisplay[];
   briefs_information_extra_typst: string;
   pc_letter_reference_typst: string;
   today_de: string;
-  [key: string]: string | ReferenceSign[] | string[];
+  today_ort_line: string;
+  signature_typst: string;
+  [key: string]: string | ReferenceSign[] | ReferenceSignDisplay[] | string[];
 }
 
 export interface FormValues {

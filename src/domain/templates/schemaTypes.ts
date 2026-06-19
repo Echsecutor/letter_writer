@@ -2,6 +2,7 @@ export type SchemaFieldType =
   | 'text'
   | 'textarea'
   | 'date'
+  | 'image'
   | 'reference-signs';
 
 export interface SchemaField {

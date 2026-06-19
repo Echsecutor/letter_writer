@@ -18,7 +18,7 @@ async function handleTypstRequest(request: TypstRequest): Promise<TypstResponse 
       await initTypstWorkerRuntime();
       return { type: 'typst:init', id: request.id, ok: true };
     case 'typst:compile': {
-      const result = await compileTypstInWorkerRuntime(request.source);
+      const result = await compileTypstInWorkerRuntime(request.source, request.shadowFiles);
       if (request.format === 'svg') {
         return { type: 'typst:compile', id: request.id, format: 'svg', svg: result.svg };
       }

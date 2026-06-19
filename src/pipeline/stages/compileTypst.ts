@@ -1,7 +1,9 @@
 import type { CompileResult } from '../../domain/letter/types';
+import type { TypstShadowFile } from '../../domain/letter/signatureAsset';
 
 export interface CompileTypstInput {
   mainContent: string;
+  shadowFiles?: TypstShadowFile[];
 }
 
 export interface TypstCompiler {

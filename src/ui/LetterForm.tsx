@@ -23,8 +23,10 @@ export function LetterForm({ fields, values, onChange }: LetterFormProps) {
         event.preventDefault();
       }}
     >
-      {fields.map((field) => (
-        <div key={field.id}>
+      {fields
+        .filter((field) => field.type !== 'image')
+        .map((field) => (
+          <div key={field.id}>
           <label htmlFor={field.id} className="mb-1 block text-sm font-medium text-gray-700">
             {field.label}
           </label>
@@ -51,8 +53,8 @@ export function LetterForm({ fields, values, onChange }: LetterFormProps) {
               }}
             />
           )}
-        </div>
-      ))}
+          </div>
+        ))}
     </form>
   );
 }

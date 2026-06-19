@@ -33,3 +33,6 @@
 = {{ Betreff }}
 
 /* BODY_INJECT */
+{% if signature_typst %}
+{{ signature_typst }}
+{% endif %}

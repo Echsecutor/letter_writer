@@ -13,6 +13,7 @@ import {
 } from '@myriaddreamin/typst.ts/options.init';
 import { createTypstRenderer, type TypstRenderer } from '@myriaddreamin/typst.ts/renderer';
 import type { CompileResult } from '../../domain/letter/types';
+import type { TypstShadowFile } from '../../domain/letter/signatureAsset';
 import {
   CATALOG_PACKAGES,
   createLocalPackageRegistry,
@@ -89,12 +90,18 @@ function getRenderer(): Promise<TypstRenderer> {
   return rendererPromise;
 }
 
-export async function compileTypstInWorkerRuntime(mainContent: string): Promise<CompileResult> {
+export async function compileTypstInWorkerRuntime(
+  mainContent: string,
+  shadowFiles: TypstShadowFile[] = [],
+): Promise<CompileResult> {
   const compiler = await getCompiler();
   const renderer = await getRenderer();
 
   compiler.resetShadow();
   compiler.addSource(MAIN_FILE, mainContent);
+  for (const file of shadowFiles) {
+    compiler.mapShadow(file.path, file.content);
+  }
 
   const vectorResult = await compiler.compile({
     mainFilePath: MAIN_FILE,

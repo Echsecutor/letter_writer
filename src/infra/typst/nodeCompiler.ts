@@ -27,8 +27,14 @@ function getNodeCompiler(): NodeCompiler {
 /** Node typst compiler adapter for CI integration tests (Phase 1). */
 export function compileWithNodeCompiler(input: CompileTypstInput): Promise<CompileResult> {
   const compiler = getNodeCompiler();
-  const pdf = compiler.pdf({ mainFileContent: input.mainContent });
-  const svg = compiler.svg({ mainFileContent: input.mainContent });
+  compiler.resetShadow();
+  for (const file of input.shadowFiles ?? []) {
+    compiler.mapShadow(file.path, Buffer.from(file.content));
+  }
+
+  const compileArgs = { mainFileContent: input.mainContent };
+  const pdf = compiler.pdf(compileArgs);
+  const svg = compiler.svg(compileArgs);
 
   return Promise.resolve({
     pdf: new Uint8Array(pdf),

@@ -12,7 +12,7 @@
   reference-signs: (
     
   ),
-  date: "19.06.2026",
+  date: "Hürth, den 19.06.2026",
   subject: "Anfrage bezüglich Projekt X",
 )
 

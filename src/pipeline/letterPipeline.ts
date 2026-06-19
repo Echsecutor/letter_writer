@@ -1,4 +1,4 @@
-import { buildContext } from '../domain/letter/buildContext';
+import { buildContext, extractSignatureAsset } from '../domain/letter/buildContext';
 import type { LetterInput, LetterOutput } from '../domain/letter/types';
 import { loadTemplate } from '@/domain/templates/loadTemplate';
 import type { BodyConverterFactory } from './bodyConverters/types';
@@ -34,7 +34,14 @@ export async function runLetterPipeline(
   );
 
   const { mainContent } = assembleDocument({ filledShell, bodyTypst });
-  const compile = await compileTypst({ mainContent }, options.typstCompiler);
+  const signatureAsset = extractSignatureAsset(input.values);
+  const compile = await compileTypst(
+    {
+      mainContent,
+      shadowFiles: signatureAsset ? [signatureAsset] : undefined,
+    },
+    options.typstCompiler,
+  );
 
   return { filledShell, mainContent, compile };
 }

@@ -19,7 +19,24 @@ describe('buildContext', () => {
     expect(context.Empfaenger_typst).toContain('Firma Beispiel GmbH');
     expect(context.reference_signs).toEqual([]);
     expect(context.today_de).toMatch(/\d{2}\.\d{2}\.\d{4}/);
+    expect(context.today_ort_line).toBe('Hürth, den ' + context.today_de);
+    expect(context.Datum_ort_line).toBe('Hürth, den 19.06.2026');
+    expect(context.Datum_de).toBe('19.06.2026');
     expect(context.Ort).toBe('Hürth');
+  });
+
+  it('formats ISO date inputs for German letter output', () => {
+    const context = buildContext({
+      values: {
+        ...formValues,
+        Datum: '2026-06-19',
+      },
+      schema,
+    });
+
+    expect(context.Datum_de).toBe('19.06.2026');
+    expect(context.Datum_ort_line).toBe('Hürth, den 19.06.2026');
+    expect(context.Datum_datetime_typst).toBe('datetime(day: 19, month: 6, year: 2026)');
   });
 
   it('builds multi-library address helpers', () => {
@@ -52,8 +69,28 @@ describe('buildContext', () => {
       { label: 'Ihr Zeichen', value: 'ABC-1' },
       { label: 'Unser Zeichen', value: 'XYZ-9' },
     ]);
+    expect(context.letter_pro_reference_signs).toEqual([
+      { display: 'Ihr Zeichen: ABC-1' },
+      { display: 'Unser Zeichen: XYZ-9' },
+    ]);
     expect(context.briefs_information_extra_typst).toContain('Ihr Zeichen: ABC-1');
     expect(context.pc_letter_reference_typst).toBe('Ihr Zeichen: ABC-1');
+  });
+
+  it('omits reference signs without values from letter output', () => {
+    const context = buildContext({
+      values: {
+        ...formValues,
+        reference_signs: JSON.stringify([
+          { label: 'Ihr Zeichen', value: 'ABC-1' },
+          { label: 'Unser Zeichen', value: '' },
+        ]),
+      },
+      schema,
+    });
+
+    expect(context.letter_pro_reference_signs).toEqual([{ display: 'Ihr Zeichen: ABC-1' }]);
+    expect(context.briefs_information_extra_typst).toBe('Ihr Zeichen: ABC-1');
   });
 });
 

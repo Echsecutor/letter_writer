@@ -1,18 +1,21 @@
-import type { FormValues, LetterContext, ReferenceSign } from './types';
+import type { FormValues, LetterContext, ReferenceSign, ReferenceSignDisplay } from './types';
 import type { LetterSchema } from '../templates/schemaTypes';
+import {
+  formatDateDe,
+  formatOrtDateLine,
+  formatTodayDe,
+  toDatumDatetimeTypst,
+} from './dateFormat';
+import {
+  buildSignatureTypst,
+  parseSignatureDataUrl,
+  signatureShadowPath,
+} from './signatureAsset';
 import { typstEscape } from './typstEscape';
 
 export interface BuildContextInput {
   values: FormValues;
   schema: LetterSchema;
-}
-
-function formatTodayDe(): string {
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(new Date());
 }
 
 function resolveFieldValues(values: FormValues, schema: LetterSchema): Record<string, string> {
@@ -57,28 +60,6 @@ function toAddressTypstArray(address: string): string {
     .join(', ');
 }
 
-function parseGermanDate(value: string): { day: number; month: number; year: number } | null {
-  const match = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(value.trim());
-  if (!match) {
-    return null;
-  }
-  const day = Number(match[1]);
-  const month = Number(match[2]);
-  const year = Number(match[3]);
-  if (day < 1 || day > 31 || month < 1 || month > 12) {
-    return null;
-  }
-  return { day, month, year };
-}
-
-function toDatumDatetimeTypst(datum: string): string {
-  const parsed = parseGermanDate(datum);
-  if (!parsed) {
-    return '';
-  }
-  return `datetime(day: ${String(parsed.day)}, month: ${String(parsed.month)}, year: ${String(parsed.year)})`;
-}
-
 export function parseReferenceSigns(raw: string | undefined): ReferenceSign[] {
   if (!raw) {
     return [];
@@ -102,7 +83,7 @@ export function parseReferenceSigns(raw: string | undefined): ReferenceSign[] {
         label: entry.label.trim(),
         value: entry.value.trim(),
       }))
-      .filter((entry) => entry.label !== '' || entry.value !== '');
+      .filter((entry) => entry.value !== '');
   } catch {
     return [];
   }
@@ -115,17 +96,27 @@ function escapeReferenceSigns(signs: ReferenceSign[]): ReferenceSign[] {
   }));
 }
 
+function toLetterProReferenceSigns(signs: ReferenceSign[]): ReferenceSignDisplay[] {
+  return signs
+    .filter((sign) => sign.value !== '')
+    .map((sign) => {
+      const label = sign.label || 'Bezug';
+      return { display: typstEscape(`${label}: ${sign.value}`) };
+    });
+}
+
 function toBriefsInformationExtra(signs: ReferenceSign[]): string {
-  if (signs.length === 0) {
+  const withValues = signs.filter((sign) => sign.value !== '');
+  if (withValues.length === 0) {
     return '';
   }
 
-  return signs
+  return withValues
     .map((sign) => {
-      if (sign.label && sign.value) {
+      if (sign.label) {
         return `${typstEscape(sign.label)}: ${typstEscape(sign.value)}`;
       }
-      return typstEscape(sign.label || sign.value);
+      return typstEscape(sign.value);
     })
     .join('\\\\ ');
 }
@@ -143,10 +134,18 @@ function toPcLetterReference(signs: ReferenceSign[]): string {
 
 export function buildContext(input: BuildContextInput): LetterContext {
   const resolved = resolveFieldValues(input.values, input.schema);
-  const today_de = formatTodayDe();
+  const todayDe = formatTodayDe();
   const reference_signs = escapeReferenceSigns(parseReferenceSigns(input.values.reference_signs));
   const absenderName = typstEscape(resolved.Absender_Name);
   const absenderAdresse = typstEscape(resolved.Absender_Adresse);
+  const ortRaw = resolved.Ort;
+  const datumDe = resolved.Datum ? formatDateDe(resolved.Datum) : '';
+  const todayOrtLine = typstEscape(formatOrtDateLine(ortRaw, todayDe));
+  const datumOrtLine = datumDe
+    ? typstEscape(formatOrtDateLine(ortRaw, datumDe))
+    : todayOrtLine;
+  const signaturePath = signatureShadowPath(input.values.Unterschrift);
+  const signatureAsset = parseSignatureDataUrl(input.values.Unterschrift);
 
   return {
     Absender_Name: absenderName,
@@ -156,13 +155,23 @@ export function buildContext(input: BuildContextInput): LetterContext {
     Empfaenger: resolved.Empfaenger,
     Empfaenger_typst: toEmpfaengerTypst(resolved.Empfaenger),
     Betreff: typstEscape(resolved.Betreff),
-    Datum: resolved.Datum ? typstEscape(resolved.Datum) : '',
+    Datum: datumDe ? typstEscape(datumDe) : '',
+    Datum_de: datumDe ? typstEscape(datumDe) : '',
+    Datum_ort_line: datumOrtLine,
     Datum_datetime_typst: resolved.Datum ? toDatumDatetimeTypst(resolved.Datum) : '',
-    Ort: resolved.Ort ? typstEscape(resolved.Ort) : '',
+    Ort: ortRaw ? typstEscape(ortRaw) : '',
     Anschreiben: resolved.Anschreiben,
     reference_signs,
+    letter_pro_reference_signs: toLetterProReferenceSigns(reference_signs),
     briefs_information_extra_typst: toBriefsInformationExtra(reference_signs),
     pc_letter_reference_typst: toPcLetterReference(reference_signs),
-    today_de: typstEscape(today_de),
+    today_de: typstEscape(todayDe),
+    today_ort_line: todayOrtLine,
+    signature_typst:
+      signatureAsset && signaturePath ? buildSignatureTypst(signaturePath) : '',
   };
+}
+
+export function extractSignatureAsset(values: FormValues): ReturnType<typeof parseSignatureDataUrl> {
+  return parseSignatureDataUrl(values.Unterschrift);
 }

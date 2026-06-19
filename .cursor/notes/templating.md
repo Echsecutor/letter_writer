@@ -59,11 +59,14 @@ One `shared.schema.json` drives the form for every template — switching templa
 
 `buildContext.ts` maps flat form values → Nunjucks context:
 - `reference_signs`: `{ label, value }[]` from `ReferenceFields` UI (JSON in draft)
+- `letter_pro_reference_signs`: inline `"Ihr Zeichen: …"` display strings for letter-pro
+- `Datum_de`, `Datum_ort_line`, `today_ort_line`: German dates (`DD.MM.YYYY`) and `Ort, den …` lines
+- `Unterschrift`: optional data-URL image → Typst shadow file + `signature_typst` snippet after body
 - `Absender_sender_lines`, `Absender_Adresse_typst_array`: library-neutral address shapes
 - `Empfaenger_typst`: recipient lines with Typst `\` breaks
-- `today_de`: `Intl.DateTimeFormat('de-DE')` default for `Datum`
+- `today_de`: German default date for empty `Datum` field
 
-Field types: `text`, `textarea`, `date`; reference signs via dedicated UI component.
+Field types: `text`, `textarea`, `date`, `image`; reference signs via dedicated UI component.
 
 ## Body conversion modes
 

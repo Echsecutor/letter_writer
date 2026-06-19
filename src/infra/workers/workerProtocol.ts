@@ -19,11 +19,17 @@ export interface TypstInitResponse {
   ok: true;
 }
 
+export interface TypstShadowFilePayload {
+  path: string;
+  content: Uint8Array;
+}
+
 export interface TypstCompileRequest {
   type: 'typst:compile';
   id: string;
   source: string;
   format: 'svg' | 'pdf' | 'both';
+  shadowFiles?: TypstShadowFilePayload[];
 }
 
 export interface TypstCompileSvgResponse {

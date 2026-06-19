@@ -18,8 +18,11 @@
   {% if Ort %}
   location: "{{ Ort }}",
   {% endif %}
-  date: "{{ Datum | default(today_de) }}",
+  date: "{{ Datum_de | default(today_de) }}",
   subject: [{{ Betreff }}],
 )
 
 /* BODY_INJECT */
+{% if signature_typst %}
+{{ signature_typst }}
+{% endif %}

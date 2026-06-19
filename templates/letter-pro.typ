@@ -10,12 +10,15 @@
     {{ Empfaenger_typst }}
   ],
   reference-signs: (
-    {% for ref in reference_signs %}
-    ([{{ ref.label }}], [{{ ref.value }}]),
+    {% for ref in letter_pro_reference_signs %}
+    ([{{ ref.display }}], []),
     {% endfor %}
   ),
-  date: "{{ Datum | default(today_de) }}",
+  date: "{{ Datum_ort_line | default(today_ort_line) }}",
   subject: "{{ Betreff }}",
 )
 
 /* BODY_INJECT */
+{% if signature_typst %}
+{{ signature_typst }}
+{% endif %}

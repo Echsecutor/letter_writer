@@ -10,6 +10,7 @@ import { BodyModeToggle } from '../ui/BodyModeToggle';
 import { DownloadButton } from '../ui/DownloadButton';
 import { LetterForm } from '../ui/LetterForm';
 import { ReferenceFields } from '../ui/ReferenceFields';
+import { SignatureField } from '../ui/SignatureField';
 import { TemplatePicker } from '../ui/TemplatePicker';
 import { TypstPreview } from '../ui/TypstPreview';
 
@@ -110,6 +111,12 @@ export function App() {
                 value={values.reference_signs}
                 onChange={(nextValue) => {
                   setField('reference_signs', nextValue);
+                }}
+              />
+              <SignatureField
+                value={values.Unterschrift}
+                onChange={(nextValue) => {
+                  setField('Unterschrift', nextValue);
                 }}
               />
             </>
