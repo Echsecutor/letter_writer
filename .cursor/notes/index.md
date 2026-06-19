@@ -10,6 +10,7 @@ Client-only letter-writing SPA: **Typst WASM + letter-pro** for DIN 5008 PDF/pre
 | [pdf-rendering-research.md](./pdf-rendering-research.md) | Web research: PDF options matrix, industry patterns, why Typst WASM won |
 | [wasm-dependencies.md](./wasm-dependencies.md) | typst.ts, pandoc-wasm, letter-pro, nunjucks — health, APIs, limits, GPL |
 | [templating.md](./templating.md) | Nunjucks vs Mustache; schema; `letter.md` → `letter.typ` migration |
+| [ci-and-containers.md](./ci-and-containers.md) | GitHub Actions verify + GHCR publish, image tags, action versions |
 
 ## Project structure (current)
 
@@ -26,7 +27,7 @@ Client-only letter-writing SPA: **Typst WASM + letter-pro** for DIN 5008 PDF/pre
 | `public/typst-packages/` | Vendored letter-pro (`@local/letter-pro:3.0.0`) |
 | `public/typst-data/` | Symlink tree for NodeCompiler `@local` package resolution in CI |
 | `scripts/` | `vendor-letter-pro.sh`, `verify-vendored-letter-pro.sh` |
-| `.github/workflows/ci.yml` | Lint, build, vendored check, scaffold tests |
+| `.github/workflows/ci.yml` | Verify on PRs; GHCR publish (`latest` on `main`, semver tags on `v*.*.*` releases) |
 | `Dockerfile`, `docker-compose.yml`, `docker/nginx.conf` | Multi-stage build (Node 22 → nginx Alpine static serve) |
 | `.cursor/plans/` | Implementation plans |
 

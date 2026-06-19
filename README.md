@@ -20,7 +20,7 @@ Single-project Vite/React app at the repo root.
 | `scripts/` | `vendor-letter-pro.sh`, `verify-vendored-letter-pro.sh` |
 | `.cursor/plans/` | [Implementation plan](.cursor/plans/letter_writer_web_app.md) |
 | `.cursor/notes/` | Developer notes ([index](.cursor/notes/index.md)) |
-| `.github/workflows/ci.yml` | Lint, build, vendored check, scaffold tests |
+| `.github/workflows/ci.yml` | Lint, build, tests; push Docker image to GHCR on `main` and release tags |
 | `Dockerfile`, `docker-compose.yml` | Container build (Node 22) and nginx static serving |
 | `docker/nginx.conf` | Runtime web server config for the production image |
 | `LICENSE.txt` | AGPL-3.0 |
@@ -60,6 +60,17 @@ docker compose up --build
 ```
 
 Open http://localhost:8080 (override host port with `LETTER_WRITER_PORT=3000 docker compose up --build`).
+
+### CI and container images
+
+On every push to `main`, GitHub Actions runs lint, build, and tests, then builds and pushes `ghcr.io/<owner>/letter_writer:latest` to the [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry). No registry secrets are required for this public repository — the workflow uses the built-in `GITHUB_TOKEN` with `packages: write`.
+
+Release tags matching `vMAJOR.MINOR.PATCH` (for example `v1.0.0`) publish the same image with semver tags (`1.0.0`, `1.0`, `1`) in addition to `latest`.
+
+```bash
+docker pull ghcr.io/echsecutor/letter_writer:latest
+docker run --rm -p 8080:80 ghcr.io/echsecutor/letter_writer:latest
+```
 
 **First-load size (planned):** ~15 MB without pandoc; ~30 MB with pandoc-wasm (GPL-2.0, lazy-loaded). See the [implementation plan](.cursor/plans/letter_writer_web_app.md).
 

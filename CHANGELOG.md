@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- GitHub Actions CI: verify on PRs; on `main` and semver tags (`v*.*.*`) build and push Docker image to GHCR (`latest` plus semver tags on releases)
 - Phase 2: Markdown body conversion via lazy-loaded `pandoc.worker.ts` and `pandocClient.ts`
 - Phase 2: `convertBody` stage with injectable `BodyConverter`; `nodePandocConverter` for CI tests
 - Phase 2: `BodyModeToggle` UI (plain text vs Markdown) with `bodyMode` persisted in localStorage drafts
