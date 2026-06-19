@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+# Coding Style
+
+This is a production code repository. Whenever editing code make sure that any code changes improve code quality, clean code, deduplication (DRY) and maintainability. Make sure all changes are covered by tests. Lint and run all tests in all affected sub projects and fix all errors (also preexisting). Make sure to properly modularize the code into manageable sub modules. No code file should be larger than 2k lines, less than 1k lines are preferable. If a large module is encountered, carefully think about how to best modularize in order to increase deduplication and maintainability and decrease coupling.
+
+After finishing code changes, performs critical review of those changes in order to improve the implementation (not to write review docs). Critically review the changes with the above clean code, DRY, etc. instructions and finally improve anything worth improving. After improvements are in place, run typecheck, linter, tests, build, and all other available static code analysis (npm audit,...) and fix all errors, also pre existing.
