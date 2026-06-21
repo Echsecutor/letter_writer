@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Pages deployment uses relative asset URLs (`base: './'`) and runtime path resolution via `appUrl()` instead of a build-time base-path variable
 
 ### Fixed
+- Renamed Typst package manifest to `package-manifest.json` so GitHub Pages artifact upload includes it (dotfiles are excluded by default)
 - Runtime fetches for templates, catalog, and Typst packages resolve relative to the deployed app root so the app works under GitHub Pages subpaths
 - Bezugszeichen rows and letter output only appear when a value is entered
 - Typst WASM preview and PDF download in the browser by passing Vite-bundled `getModule` URLs to the compiler and renderer init
