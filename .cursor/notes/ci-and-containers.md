@@ -16,7 +16,7 @@
 | `build` | push to `main`, `workflow_dispatch` | `npm ci`, vendor packages, `VITE_BASE` from `configure-pages`, upload `dist` |
 | `deploy` | after `build` | `deploy-pages` to `github-pages` environment |
 
-**Setup:** Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**. Project-site URL is `https://<owner>.github.io/<repo>/`; `vite.config.ts` reads `VITE_BASE` (set in the workflow from `configure-pages` `base_path`).
+**Setup:** Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**. Project-site URL is `https://<owner>.github.io/<repo>/`; runtime HTTP fetches use `publicUrl()` (`src/infra/publicUrl.ts`) which prefixes paths with Vite `base` / `import.meta.env.BASE_URL`.
 
 ## Registry
 

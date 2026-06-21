@@ -9,6 +9,11 @@ function contentType(filePath: string): string {
   return 'text/plain; charset=utf-8';
 }
 
+function publicPath(base: string, relativePath: string): string {
+  const path = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+  return `${base}${path}`;
+}
+
 export function templatesPlugin(rootDir: string): Plugin {
   const templatesDir = path.join(rootDir, 'templates');
   const publicTemplatesDir = path.join(rootDir, 'public/templates');
@@ -16,7 +21,8 @@ export function templatesPlugin(rootDir: string): Plugin {
   return {
     name: 'letter-writer-templates',
     configureServer(server) {
-      server.middlewares.use('/templates', (req, res, next) => {
+      const route = publicPath(server.config.base, 'templates').replace(/\/$/, '');
+      server.middlewares.use(route, (req, res, next) => {
         const urlPath = decodeURIComponent(req.url?.split('?')[0] ?? '/');
         const filePath = path.normalize(path.join(templatesDir, urlPath));
         if (!filePath.startsWith(templatesDir) || !existsSync(filePath)) {

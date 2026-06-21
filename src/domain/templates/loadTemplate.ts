@@ -1,10 +1,11 @@
 import type { LoadedTemplate, LetterSchema } from './schemaTypes';
 import { resolveLetterSchema } from './resolveSchema';
+import { publicUrl } from '@/infra/publicUrl';
 
 export function loadTemplate(templateId: string): Promise<LoadedTemplate> {
   const schemaSource = {
     readJson: async (relativePath: string) => {
-      const response = await fetch(`/templates/${relativePath}`);
+      const response = await fetch(publicUrl(`/templates/${relativePath}`));
       if (!response.ok) {
         throw new Error(`Failed to load schema "${relativePath}"`);
       }
@@ -13,8 +14,8 @@ export function loadTemplate(templateId: string): Promise<LoadedTemplate> {
   };
 
   return Promise.all([
-    fetch(`/templates/${templateId}.typ`),
-    fetch(`/templates/${templateId}.schema.json`),
+    fetch(publicUrl(`/templates/${templateId}.typ`)),
+    fetch(publicUrl(`/templates/${templateId}.schema.json`)),
   ]).then(async ([shellRes, schemaRes]) => {
     if (!shellRes.ok || !schemaRes.ok) {
       throw new Error(`Failed to load template "${templateId}"`);
