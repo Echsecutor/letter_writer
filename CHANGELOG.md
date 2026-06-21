@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- GitHub Actions workflow (`.github/workflows/pages.yml`) to build the Vite app and publish static assets to GitHub Pages on pushes to `main`
 - Optional signature image upload (`Unterschrift`) rendered below the letter body in all catalog templates
 
 ### Changed

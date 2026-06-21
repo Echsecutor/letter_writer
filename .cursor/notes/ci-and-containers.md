@@ -1,13 +1,24 @@
-# CI and container publishing
+# CI, GitHub Pages, and container publishing
 
-## Workflow
+## Workflows
 
-`.github/workflows/ci.yml` — two jobs:
+### `ci.yml`
 
 | Job | Triggers | Actions |
 |-----|----------|---------|
 | `verify` | PR + push to `main` + semver tags | `npm ci`, vendor letter-pro, lint, build, scaffold tests |
 | `docker` | push to `main` + semver tags only (after `verify`) | Build `Dockerfile`, push to GHCR |
+
+### `pages.yml`
+
+| Job | Triggers | Actions |
+|-----|----------|---------|
+| `build` | push to `main`, `workflow_dispatch` | `npm ci`, vendor packages, `VITE_BASE` from `configure-pages`, upload `dist` |
+| `deploy` | after `build` | `deploy-pages` to `github-pages` environment |
+
+**Setup:** Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**. Project-site URL is `https://<owner>.github.io/<repo>/`; `vite.config.ts` reads `VITE_BASE` (set in the workflow from `configure-pages` `base_path`).
+
+## Registry
 
 ## Registry
 
@@ -26,6 +37,7 @@ Tag filter: `v[0-9]+.[0-9]+.[0-9]*` (semver with optional pre-release suffix).
 ## Actions (pinned majors, June 2026)
 
 - `actions/checkout@v6`, `actions/setup-node@v6`
+- `actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v5`
 - `docker/setup-buildx-action@v4`, `docker/login-action@v4`, `docker/metadata-action@v6`, `docker/build-push-action@v7`
 
 Build cache: GitHub Actions cache (`type=gha`).
