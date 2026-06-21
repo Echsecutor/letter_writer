@@ -15,8 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Standardbrief (`letter-pro`): Bezugszeichen show fixed labels (`Ihr Zeichen:` / `Unser Zeichen:`) inline with values
 - Letter date output uses German formatting (`02.01.2026`) and `Ort, den DD.MM.YYYY` when place is set
 
+### Changed
+- GitHub Pages deployment uses relative asset URLs (`base: './'`) and runtime path resolution via `appUrl()` instead of a build-time base-path variable
+
 ### Fixed
-- Runtime fetches for templates, catalog, and Typst packages now use `import.meta.env.BASE_URL` via `publicUrl()` so the app works under GitHub Pages subpaths
+- Runtime fetches for templates, catalog, and Typst packages resolve relative to the deployed app root so the app works under GitHub Pages subpaths
 - Bezugszeichen rows and letter output only appear when a value is entered
 - Typst WASM preview and PDF download in the browser by passing Vite-bundled `getModule` URLs to the compiler and renderer init
 - Pipeline errors no longer stuck behind infinite "Vorschau wird erstellt…" loading state (`useLetterPipeline` marks failed inputs as resolved)

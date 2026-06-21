@@ -3,6 +3,7 @@ import type {
   TypstResponse,
   WorkerErrorResponse,
 } from './workerProtocol';
+import { configureAppRoot } from '../appUrl';
 import {
   compileTypstInWorkerRuntime,
   initTypstWorkerRuntime,
@@ -15,6 +16,7 @@ function errorResponse(id: string, message: string): WorkerErrorResponse {
 async function handleTypstRequest(request: TypstRequest): Promise<TypstResponse | WorkerErrorResponse> {
   switch (request.type) {
     case 'typst:init':
+      configureAppRoot(request.appRootUrl);
       await initTypstWorkerRuntime();
       return { type: 'typst:init', id: request.id, ok: true };
     case 'typst:compile': {

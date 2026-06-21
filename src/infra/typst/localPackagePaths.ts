@@ -1,7 +1,7 @@
 import type { CatalogPackage } from './localTypstPackages';
 import { packagePublicUrlBase } from './localTypstPackages';
-import { publicUrl } from '../publicUrl';
+import { appUrl } from '../appUrl';
 
 export function localPackageUrlBase(spec: Pick<CatalogPackage, 'name' | 'version'>): string {
-  return publicUrl(packagePublicUrlBase(spec));
+  return appUrl(packagePublicUrlBase(spec));
 }

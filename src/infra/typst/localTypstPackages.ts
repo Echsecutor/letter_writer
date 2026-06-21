@@ -25,7 +25,7 @@ export function packageMemoryDir(spec: Pick<CatalogPackage, 'name' | 'version'>)
 }
 
 export function packagePublicUrlBase(spec: Pick<CatalogPackage, 'name' | 'version'>): string {
-  return `/typst-packages/local/${spec.name}/${spec.version}`;
+  return `typst-packages/local/${spec.name}/${spec.version}`;
 }
 
 export function createLocalPackageRegistry(): LocalPackageRegistry {

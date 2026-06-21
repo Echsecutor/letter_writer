@@ -1,5 +1,6 @@
 import type { CompileResult } from '../../domain/letter/types';
 import type { CompileTypstInput, TypstCompiler } from '../../pipeline/stages/compileTypst';
+import { getAppRootUrl } from '../appUrl';
 import {
   createRequestId,
   isWorkerErrorResponse,
@@ -52,6 +53,7 @@ function sendRequest(payload: {
   format?: 'svg' | 'pdf' | 'both';
   source?: string;
   shadowFiles?: CompileTypstInput['shadowFiles'];
+  appRootUrl?: string;
 }): Promise<TypstResponse> {
   const id = createRequestId();
   return new Promise((resolve, reject) => {
@@ -61,7 +63,10 @@ function sendRequest(payload: {
 }
 
 async function ensureInitialized(): Promise<void> {
-  initPromise ??= sendRequest({ type: 'typst:init' }).then(() => undefined);
+  initPromise ??= sendRequest({
+    type: 'typst:init',
+    appRootUrl: getAppRootUrl(),
+  }).then(() => undefined);
   await initPromise;
 }
 

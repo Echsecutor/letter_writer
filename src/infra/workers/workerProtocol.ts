@@ -11,6 +11,7 @@ export interface WorkerErrorResponse {
 export interface TypstInitRequest {
   type: 'typst:init';
   id: string;
+  appRootUrl: string;
 }
 
 export interface TypstInitResponse {
