@@ -17,7 +17,7 @@ function walkPackageDir(dir: string, relativeBase = ''): PackageFile[] {
   const files: PackageFile[] = [];
 
   for (const name of readdirSync(dir)) {
-    if (name === '.git' || name === 'package-manifest.json') {
+    if (name === '.git' || name === '.package-manifest.json' || name.startsWith('.')) {
       continue;
     }
 

@@ -16,7 +16,7 @@
 | `build` | push to `main`, `workflow_dispatch` | `npm ci`, vendor packages, build with relative asset URLs, upload `dist` |
 | `deploy` | after `build` | `deploy-pages` to `github-pages` environment |
 
-**Setup:** Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**. Project-site URL is `https://<owner>.github.io/<repo>/`. Vite uses `base: './'`; runtime HTTP fetches use `appUrl()` (`src/infra/appUrl.ts`) to resolve paths relative to `document.baseURI` (main thread) or a root URL passed to the typst worker at init.
+**Setup:** Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**. Project-site URL is `https://<owner>.github.io/<repo>/`. Vite uses `base: './'`; runtime HTTP fetches use `appUrl()` (`src/infra/appUrl.ts`). Pages artifact upload sets `include-hidden-files: true` for vendored Typst package dotfiles.
 
 ## Registry
 

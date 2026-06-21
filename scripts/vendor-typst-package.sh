@@ -36,6 +36,7 @@ else
   fi
 
   rm -rf "${TARGET}/.git" 2>/dev/null || true
+  rm -f "${TARGET}/.gitignore" 2>/dev/null || true
   echo "Vendored ${NAME} ${TAG} to ${TARGET}"
 fi
 

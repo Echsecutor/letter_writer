@@ -48,7 +48,7 @@ Messages typed in `workerProtocol.ts`.
 | `templates/{id}.schema.json` | Thin wrapper extending shared schema |
 | `templates/{id}.meta.json` | Catalog metadata (title, description, package pin) |
 
-Catalog packages vendored under `public/typst-packages/local/{name}/{version}/` with `package-manifest.json` for browser worker file loading.
+Catalog packages vendored under `public/typst-packages/local/{name}/{version}/` with `.package-manifest.json` for browser worker file loading (manifest lists Typst-relevant files only; dotfiles excluded).
 
 ## Key assets
 

@@ -19,8 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Pages deployment uses relative asset URLs (`base: './'`) and runtime path resolution via `appUrl()` instead of a build-time base-path variable
 
 ### Fixed
-- Renamed Typst package manifest to `package-manifest.json` so GitHub Pages artifact upload includes it (dotfiles are excluded by default)
-- Runtime fetches for templates, catalog, and Typst packages resolve relative to the deployed app root so the app works under GitHub Pages subpaths
+- GitHub Pages upload includes hidden files (`include-hidden-files: true`) so vendored Typst package dotfiles deploy correctly
+- Package manifest generation skips dotfiles (e.g. `.gitignore`) that are vendored upstream but not needed for Typst compilation
 - Bezugszeichen rows and letter output only appear when a value is entered
 - Typst WASM preview and PDF download in the browser by passing Vite-bundled `getModule` URLs to the compiler and renderer init
 - Pipeline errors no longer stuck behind infinite "Vorschau wird erstellt…" loading state (`useLetterPipeline` marks failed inputs as resolved)

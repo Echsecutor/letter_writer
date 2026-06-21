@@ -31,7 +31,7 @@ async function loadPackageFilesFromManifest(
   spec: CatalogPackage,
 ): Promise<Array<{ relativePath: string; content: Uint8Array }>> {
   const base = localPackageUrlBase(spec);
-  const manifestRes = await fetch(`${base}/package-manifest.json`);
+  const manifestRes = await fetch(`${base}/.package-manifest.json`);
   if (!manifestRes.ok) {
     throw new Error(`Failed to load package manifest for ${spec.name}@${spec.version}`);
   }
