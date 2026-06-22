@@ -13,7 +13,8 @@
     "test:worker": "vitest run test/integration/workerSmoke.test.ts",
     "lint": "eslint .",
     "verify:vendored": "bash scripts/verify-vendored-packages.sh",
-    "vendor:packages": "bash scripts/vendor-all-packages.sh"
+    "vendor:packages": "bash scripts/vendor-all-packages.sh",
+    "generate:favicons": "bash scripts/generate-favicons.sh"
   },
   "dependencies": {
     "@myriaddreamin/typst-ts-renderer": "0.7.0",

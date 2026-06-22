@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- App icon (`letter_writer.png`) with generated favicon variants (`public/favicon.ico`, PNG sizes, `site.webmanifest`) via `npm run generate:favicons`
+- App icon in the header bar next to the title
 - GitHub Actions workflow (`.github/workflows/pages.yml`) to build the Vite app and publish static assets to GitHub Pages on pushes to `main`
 - Optional signature image upload (`Unterschrift`) rendered below the letter body in all catalog templates
 

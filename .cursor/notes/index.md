@@ -27,7 +27,7 @@ Client-only letter-writing SPA: **Typst WASM + letter-pro / briefs / pc-letter**
 | `test/fixtures/` | Golden inputs + expected Typst/PDF assertions |
 | `public/typst-packages/` | Vendored `@local` packages (letter-pro, briefs, pc-letter) |
 | `public/typst-data/` | Symlink tree for NodeCompiler `@local` package resolution in CI |
-| `scripts/` | `vendor-typst-package.sh`, `vendor-all-packages.sh`, `verify-vendored-packages.sh` |
+| `scripts/` | `vendor-typst-package.sh`, `vendor-all-packages.sh`, `verify-vendored-packages.sh`, `generate-favicons.sh` |
 | `.github/workflows/ci.yml` | Verify on PRs; GHCR publish (`latest` on `main`, semver tags on `v*.*.*` releases) |
 | `.github/workflows/pages.yml` | Build + deploy static app to GitHub Pages on `main` |
 | `Dockerfile`, `docker-compose.yml`, `docker/nginx.conf` | Multi-stage build (Node 22 → nginx Alpine static serve) |
