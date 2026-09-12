@@ -43,6 +43,8 @@ All templates share `templates/shared.schema.json`. Switching templates keeps fo
 
 ### Deployed environments
 
+- Github pages: https://echsecutor.github.io/letter_writer/
+
 Static output from `npm run build` (or the GHCR image) can be deployed to any CDN (Cloudflare Pages, GitHub Pages, nginx). No server-side rendering required.
 
 ### Local development
